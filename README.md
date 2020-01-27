@@ -63,3 +63,17 @@ The installation of QEMU itself is simple enough. Just use `apt` (or a package m
 We'll need a few more dependencies for our purposes: `gdb-multiarch libc6-mips-cross`
 
 That's step one done. With that out of the way, we need to create a chroot environment for our executables to live in. The reason for this is that the MIPS binary (and by extension it's emulator, QEMU), will try to link against our x86_64 binaries in order to execute the program. Because of the incompatability between the architectures, this will not work. One solution is to use the `-L` option in order to specify the path for the linker, but I've found this solution to be unreliable at best and non-functional most of the time. For this reason, using a chroot environment will assist us in preventing the architectural intermingling.
+
+In order to actually set up the `chroot`:
+
+* Start by creating a directory, let's call it `chroot_jail`.
+* `sudo cp /usr/mips-linux-gnu chroot_jail`
+* `sudo mkdir chroot_jail/bin`
+* `sudo cp /usr/qemu-mips-static chroot_jail/bin`
+* `sudo cp challenge3 chroot_jail/bin`
+
+What we've done is taken all of the MIPS binaries we installed when installing `libc6-mips-cross` and moved them into our chroot directory, that way we have access to all the MIPS binaries our program might want to link against.
+In addition, we've moved our `qemu-mips-static` (static means it can function without linking against our standard library) executable into our new `bin` directory, as well as the challenge, which is the executable we want to execute.
+
+
+
