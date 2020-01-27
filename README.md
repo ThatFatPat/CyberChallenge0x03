@@ -10,8 +10,7 @@ First things first, let's read the instructions:
 	You are already familiar with x86 and hopefully with IDA.
 	
 	- First, try to find out what the architecture is ( hint: readelf) and then, understand the
-	instruction set of the architecture (google is your friend)###### For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)
-.
+	instruction set of the architecture (google is your friend)
 	
 	- Next, try to understand what the executable does.
 	
