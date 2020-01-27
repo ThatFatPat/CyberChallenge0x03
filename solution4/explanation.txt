@@ -1,0 +1,7 @@
+sudo chroot . qemu-mips-static /bin/challenge3_patched_hash
+------------------
+Enter any password
+------------------
+
+In this case we changed one bit to make the bne a beq instruction. Essentialy, we flipped the comparison: if sum != 0x539 we print "correct password! ".
+

@@ -1,0 +1,4 @@
+echo -n -e "\x7f\x7f\x7f\x7f\x7f\x7f\x7f\x7f\x7f\x7f\x43" | sudo chroot . qemu-mips-static /bin/challenge3_patched_fmtstr
+
+In this case we patched the format string for scanf to accept 11 chars ( "%10s" -> "%11s" )
+With this minimal patching we can get the executable to store 11 signed bytes on the stack, which is enough to get a sum of 1337 using the string above. We have to keep in mind the structure of the stack when corrupting it like so, but it seems enough space is vacant on the stack for this patch to not destroy anything.

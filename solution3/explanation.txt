@@ -1,0 +1,4 @@
+echo -n -e "lllllllllm" | sudo chroot . qemu-mips-static /bin/challenge3_patched_hash
+
+In this case we patched the constant. We changed one byte to get the program to load 0x439 to memory instead of 0x539.
+Using this we can get the sum low enough (1081) so that it fits within 10 signed bytes.
