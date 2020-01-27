@@ -49,3 +49,15 @@ Machine:                           MIPS R3000
 And as we can see, the architecture for this program is MIPS. That was easy enough!
 It's important to keep in mind the fact the the system is a 2's complement system in big endian. For those unfamiliar with the concepts, more info can be found here ([Endians](https://www.youtube.com/watch?v=NcaiHcBvDR4), [2's Complement](https://www.youtube.com/watch?v=lKTsv6iVxV4)).
 
+Now that we've figured out the architecture, there are a couple of challenges ahead. Before we can start solving this binary, we need to find a way to run it so we can see what it does, and also to actually run it once we have solved it. To do that, we'll be using QEMU, a low-level emulation platform that can emulate pretty much any architecture on the market today (and also a lot of obsolete ones).
+
+### Installing QEMU and other dependencies in order to execute MIPS code
+In order to execute the binary we have to follow a couple of simple steps:
+	1.Install QEMU
+	2.Set up a chroot environment. *For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)*
+	3.Copy the necessary binaries into the chroot
+
+The installation of QEMU itself is simple enough. Just use `apt` (or a package manager of your choice) to install the following packages: `qemu qemu-user-static`.
+We'll need a few more dependencies for our purposes: `gdb-multiarch libc6-mips-cross`
+
+That's step one done. With that out of the way, we need to create a chroot environment for our executables to live in. The reason for this is that the MIPS binary (and by extension it's emulator, QEMU), will try to link against our x86_64 binaries in order to execute the program. Because of the incompatability between the architectures, this will not work. One solution is to use the `-L` option in order to specify the path for the linker, but I've found this solution to be unreliable at best and non-functional most of the time. For this reason, using a chroot environment will assist us in preventing the architectural intermingling.
