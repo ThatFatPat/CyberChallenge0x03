@@ -93,6 +93,7 @@ def main():
 			if os.WSTOPSIG(stat[1]) == 19: # If we got here because of a PTRACE_ATTACH
 				print("Attached to process!")
 				print(f"PID: {pid}")
+				print("Please enter \"AAAAAAAAAA\" in the password field!")
 				started_work_print = True
 			
 			elif len(addresses) > 1: # Else if we know what address to write to
