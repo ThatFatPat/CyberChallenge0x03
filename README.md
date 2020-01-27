@@ -53,9 +53,11 @@ Now that we've figured out the architecture, there are a couple of challenges ah
 
 ### Installing QEMU and other dependencies in order to execute MIPS code
 In order to execute the binary we have to follow a couple of simple steps:
-	1.Install QEMU
-	2.Set up a chroot environment. *For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)*
-	3.Copy the necessary binaries into the chroot
+
+* Install QEMU
+* Set up a chroot environment. 
+###### For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)
+* Copy the necessary binaries into the chroot
 
 The installation of QEMU itself is simple enough. Just use `apt` (or a package manager of your choice) to install the following packages: `qemu qemu-user-static`.
 We'll need a few more dependencies for our purposes: `gdb-multiarch libc6-mips-cross`
