@@ -69,7 +69,7 @@ In order to actually set up the `chroot`:
 * Start by creating a directory, let's call it `chroot_jail`.
 * `sudo cp -r /usr/mips-linux-gnu chroot_jail`
 * `sudo mkdir chroot_jail/bin`
-* `sudo cp /usr/qemu-mips-static chroot_jail/bin`
+* `sudo cp /usr/bin/qemu-mips-static chroot_jail/bin`
 * `sudo cp challenge3 chroot_jail/bin`
 
 What we've done is taken all of the MIPS binaries we installed when installing `libc6-mips-cross` and moved them into our chroot directory, that way we have access to all the MIPS binaries our program might want to link against.
