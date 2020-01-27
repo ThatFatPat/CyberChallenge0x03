@@ -10,7 +10,8 @@ First things first, let's read the instructions:
 	You are already familiar with x86 and hopefully with IDA.
 	
 	- First, try to find out what the architecture is ( hint: readelf) and then, understand the
-	instruction set of the architecture (google is your friend).
+	instruction set of the architecture (google is your friend)###### For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)
+.
 	
 	- Next, try to understand what the executable does.
 	
@@ -67,7 +68,7 @@ That's step one done. With that out of the way, we need to create a chroot envir
 In order to actually set up the `chroot`:
 
 * Start by creating a directory, let's call it `chroot_jail`.
-* `sudo cp /usr/mips-linux-gnu chroot_jail`
+* `sudo cp -r /usr/mips-linux-gnu chroot_jail`
 * `sudo mkdir chroot_jail/bin`
 * `sudo cp /usr/qemu-mips-static chroot_jail/bin`
 * `sudo cp challenge3 chroot_jail/bin`
