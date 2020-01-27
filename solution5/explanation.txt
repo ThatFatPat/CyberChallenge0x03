@@ -1,0 +1,7 @@
+"sudo chroot . qemu-mips-static ./bin/challenge3"
+And in a seperate terminal: "sudo python3 script.py"
+
+Now that both are running, if the script announces it attached to the process,
+Fill in the password with "AAAAAAAAAA" (No quotes).
+
+Sit back, and let the magic happen!
