@@ -97,7 +97,7 @@ def main():
 				started_work_print = True
 			
 			elif len(addresses) > 1: # Else if we know what address to write to
-				libc.ptrace(PTRACE_POKEDATA, pid, address, 0x39050000)
+				libc.ptrace(PTRACE_POKEDATA, pid, address, 0x39050000) # 0x539 in Little Endian
 			
 			# Single step the program to the next instruction
 			libc.ptrace(PTRACE_SINGLESTEP, pid, None, None)
