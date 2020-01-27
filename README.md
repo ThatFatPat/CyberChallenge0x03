@@ -67,7 +67,7 @@ That's step one done. With that out of the way, we need to create a chroot envir
 In order to actually set up the `chroot`:
 
 * Start by creating a directory, let's call it `chroot_jail`.
-* `sudo cp -r /usr/mips-linux-gnu chroot_jail`
+* `sudo cp -r /usr/mips-linux-gnu/* chroot_jail`
 * `sudo mkdir chroot_jail/bin`
 * `sudo cp /usr/bin/qemu-mips-static chroot_jail/bin`
 * `sudo cp challenge3 chroot_jail/bin`
