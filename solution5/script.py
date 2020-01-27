@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import re
 from subprocess import check_output
 import struct
