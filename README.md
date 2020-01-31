@@ -961,7 +961,7 @@ Since we already know how to extract the called function from this code, we can 
 
 Let's parse the arguments.
 
-* `$a0` is again refercing memory inside the `.rodata` section, and we can use the string table we've constructed to find that it is in fact referecing the string `"%10s"`, which makes sense as it is indeed a format string, taking a 10-character string.
+* `$a0` is again refercing memory inside the `.rodata` section, and we can use the string table we've constructed to find that it is in fact referecing the string `"%10s"`, which makes sense as it is indeed a format string, taking a 10-character (maximum) string.
 * `$a1` is pointed at `$s8+36`, which is equivelant to `$sp+36`. From the signature of `scanf` we can tell that this is in fact the address to which our string will be saved.
 
 From this piece of code, we've learned that the C implementation most likely includes the following lines:
@@ -971,3 +971,33 @@ scanf("%10s", &buf);
 ```
 Awesome. We are slowly piecing together this code.
 
+#### 0x400814 - 0x400828
+```asm
+	400814:	lw	gp,16(s8)
+	
+	400818:	sw	v0,32(s8)
+	40081c:	lw	v1,32(s8)
+	400820:	li	v0,1
+	400824:	beq	v1,v0,400850 <main+0xb0>
+	400828:	nop
+```
+This code does not look like a function call.
+We already recognize the first line as restoring `$gp`, so we can safely ignore it.
+
+We are left with a comparison. The first two lines are just moving v0 to v1 while also storing the value on the stack.
+We know `$v0` contains the return value for the last subroutine call, and since that call was `scanf` we can look at the reference to find that it returns:
+```
+RETURN VALUE
+       On success, these functions return the number of input items successfully  matched
+       and assigned; this can be fewer than provided for, or even zero, in the event of an
+       early matching failure.
+
+       The value EOF is returned if the end of input is reached before  either  the  first
+       successful conversion or a matching failure occurs.  EOF is also returned if a read
+       error occurs, in which case the error indicator for the stream (see  ferror(3))  is
+       set, and errno is set to indicate the error.
+```
+Basically, it should return the number of strings matched, which from our format string we expect to be 1. When no error occured, we expect `$v0` to be 0x1 at the beginning of this code segment. If so, `$v1` is now also 0x1.
+
+At `0x400820`, we load the value 0x1 into `$v0`, after it's previous value was transferred to `$v1`.
+The next instruction simply compares the two and branches accordingly. We know that success in this case means equality, so  we know that if we branch here, `scanf` succeeded and we got a string from the user.
