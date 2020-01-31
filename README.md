@@ -259,7 +259,13 @@ Disassembly of section .fini:
 	00400a90 <_fini>:
 ```
 
+For simplicity's sake, I've removed all the boilerplate code from the disassembly output. This code is very similar between different binaries and has almost nothing to do with the actual program code.
 
+Looking at the output of `objdump`, we already have one important piece of information, even before diving deep into the code: **The binary only contains a main function** (Unless other functions were fuzzed somehow, but this is not probable in a simple challenge such as this).
+
+Equipped with this information, we can start reversing our binary.
+
+### A Quick Overview of the MIPS Architecture
 
 
 | Number | Name | Purpose |
