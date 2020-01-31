@@ -985,7 +985,7 @@ This code does not look like a function call.
 We already recognize the first line as restoring `$gp`, so we can safely ignore it.
 
 We are left with a comparison. The first two lines are just moving v0 to v1 while also storing the value on the stack.
-We know `$v0` contains the return value for the last subroutine call, and since that call was `scanf` we can look at the reference to find that it returns:
+We know `$v0` contains the return value for the last subroutine call, and since that call was `scanf` we can look at the reference (`man scanf`) to find that it returns:
 ```
 RETURN VALUE
        On success, these functions return the number of input items successfully  matched
@@ -1001,3 +1001,71 @@ Basically, it should return the number of strings matched, which from our format
 
 At `0x400820`, we load the value 0x1 into `$v0`, after it's previous value was transferred to `$v1`.
 The next instruction simply compares the two and branches accordingly. We know that success in this case means equality, so  we know that if we branch here, `scanf` succeeded and we got a string from the user.
+
+In order to follow the logical flow of the program, we will now jump to the address specified by the branch, and assume a string has been given to the program.
+
+#### 0x400850 - 0x40086c
+```asm
+	400850:	li	a0,10
+	400854:	lw	v0,-32700(gp)
+	400858:	move	t9,v0
+	40085c:	jalr	t9
+	400860:	nop
+
+	400864:	lw	gp,16(s8)
+	400868:	b	40089c <main+0xfc>
+	40086c:	nop
+```
+This code is made up of 2 distinct pieces.
+
+The first one is a standard library function call to `putchar`, which prints a char to `stdout`. (AKA The Console*)
+In this case:
+```c
+putchar(0xa); // 0xa is '\n'
+```
+This is basically just a newline print.
+###### * The console actually interfaces with the program's `stdout` and reads from it, rather than the console actually being `stdout`.
+
+The second piece restores `$gp` and branches (unconditionally) to `0x40089c`. Let's follow the flow of the program.
+
+#### 0x40089c - 0x4008b0
+```asm
+	40089c:	lw	v0,24(s8)
+	4008a0:	addiu	v1,s8,24
+	4008a4:	addu	v0,v1,v0
+	4008a8:	lb	v0,12(v0)
+	4008ac:	bnez	v0,400870 <main+0xd0>
+	4008b0:	nop 
+```
+The next piece of code may seem complicated at first, but looking through it a few times carefully can really help.
+Let's try to illustrate this code in C:
+```c
+v0 = *($sp+24);
+v1 = $sp+24;
+v0 = v0 + v1;
+v0 = (int)(*(v0+12));
+
+if (v0 != 0)
+	goto 0x400870
+```
+Not very helpful is it... Well there's still some things we can do in order to parse this code. Let's try to look at the stack. 
+
+From the prolouge, we know that `24(sp)` is zeroed out, and since we haven't touched it anywhere since it should stay that way. We also know that `36(sp)` stores our string. This will probably come in handy. If these are true, `24(sp)` being loaded into `$v0` in fact zeroes it out. We also see that the address `sp+24` is moved to `$v1`.
+
+The next thing that happens is may take a moment to parse, but in fact it is:
+```c
+v0 = (int)(*(v1+v0+12));
+```
+Right now, we know that `$v0` is in fact 0, and that `$v1` contains the address `sp+24`. If so, that means we are doing the following:
+```c
+v0 = (int)(*(sp+24+12));
+```
+Oh wait! We know exactly what is stored at `$sp+36`... It is our string!
+If so, that means we are in fact loading the first character from our string into `$v0` from the stack.
+
+The next instruction simply compares our byte to `\x00`, the null terminator, and branches back to the address `0x400870` as long as the byte loaded is not the null-terminator.
+
+Just by looking at this piece of code, we can maybe catch a vibe of what it's trying to do. But if we still don't know, we can just keep following the code in order to find out.
+
+
+
