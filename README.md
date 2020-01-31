@@ -279,10 +279,13 @@ The main differences between RISC and CISC can be summarized as follows:
 |------|------|
 | Set length instructions | Variable length instructions |
 | Stronger reliance on software | More reliance on hardware-implemented routines |
-| More seperation between memory and registers, LOAD and STORE are seperate instructions | Can perform operations on memory |
+| More seperation between memory and registers, LOAD and STORE are seperate instructions | Can perform operations directly* on memory |
 
-More information on the topic can be found [here](https://cs.stanford.edu/people/eroberts/courses/soco/projects/risc/risccisc/)
+###### * Please read the supplied article 
+###### More information on the topic can be found [here](https://cs.stanford.edu/people/eroberts/courses/soco/projects/risc/risccisc/)
 
+#### Registers
+The MIPS ISA specifies 32 registers. Use the following table as a reference:
 
 | Number | Name | Purpose |
 |--------|------|---------|
@@ -295,7 +298,7 @@ More information on the topic can be found [here](https://cs.stanford.edu/people
 | $26-$27 | $k0-$k1 | The Kernel Reserved registers. DO NOT USE. |
 | $28 | $gp | The Globals Pointer used for addressing static global variables. |
 | $29 | $sp | The Stack Pointer. |
-| $30 | $fp (or $s8) | The Frame Pointer |
+| $30 | $fp (or $s8) | The Frame Pointer. [What are frame pointers?](https://softwareengineering.stackexchange.com/a/194341) |
 | $31 | $ra | The Return Address in a subroutine call. |
 
 ###### Adapted from UW CSE410 ([Source](https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf))
