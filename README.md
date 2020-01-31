@@ -455,14 +455,12 @@ Let's take another look at main, this time just adding newlines between branches
 	  4007cc:	afc20020 	sw	v0,32(s8)
 	  4007d0:	afc00018 	sw	zero,24(s8)
 	  4007d4:	afc0001c 	sw	zero,28(s8)
-	  
 	  4007d8:	3c020040 	lui	v0,0x40
 	  4007dc:	24440af0 	addiu	a0,v0,2800
 	  4007e0:	8f828054 	lw	v0,-32684(gp)
 	  4007e4:	0040c825 	move	t9,v0
 	  4007e8:	0320f809 	jalr	t9
 	  4007ec:	00000000 	nop
-	  
 	  4007f0:	8fdc0010 	lw	gp,16(s8)
 	  4007f4:	27c20024 	addiu	v0,s8,36
 	  4007f8:	00402825 	move	a1,v0
@@ -472,7 +470,6 @@ Let's take another look at main, this time just adding newlines between branches
 	  400808:	0040c825 	move	t9,v0
 	  40080c:	0320f809 	jalr	t9
 	  400810:	00000000 	nop
-	  
 	  400814:	8fdc0010 	lw	gp,16(s8)
 	  400818:	afc20020 	sw	v0,32(s8)
 	  40081c:	8fc30020 	lw	v1,32(s8)
@@ -480,29 +477,24 @@ Let's take another look at main, this time just adding newlines between branches
 	  400824:	1062000a 	beq	v1,v0,400850 <main+0xb0>
 	  400828:	00000000 	nop
 	  
-	  
 	40082c:		3c020040 	lui	v0,0x40
 	  400830:	24440b14 	addiu	a0,v0,2836
 	  400834:	8f828050 	lw	v0,-32688(gp)
 	  400838:	0040c825 	move	t9,v0
 	  40083c:	0320f809 	jalr	t9
 	  400840:	00000000 	nop
-	  
 	  400844:	8fdc0010 	lw	gp,16(s8)
 	  400848:	1000002e 	b	400904 <main+0x164>
 	  40084c:	00000000 	nop
-	  
 	  
 	400850:		2404000a 	li	a0,10
 	  400854:	8f828044 	lw	v0,-32700(gp)
 	  400858:	0040c825 	move	t9,v0
 	  40085c:	0320f809 	jalr	t9
 	  400860:	00000000 	nop
-	  
 	  400864:	8fdc0010 	lw	gp,16(s8)
 	  400868:	1000000c 	b	40089c <main+0xfc>
 	  40086c:	00000000 	nop
-	  
 	  
 	400870:		8fc20018 	lw	v0,24(s8)
 	  400874:	27c30018 	addiu	v1,s8,24
@@ -516,7 +508,6 @@ Let's take another look at main, this time just adding newlines between branches
 	  400894:	24420001 	addiu	v0,v0,1
 	  400898:	afc20018 	sw	v0,24(s8)
 	  
-	  
 	40089c:		8fc20018 	lw	v0,24(s8)
 	  4008a0:	27c30018 	addiu	v1,s8,24
 	  4008a4:	00621021 	addu	v0,v1,v0
@@ -524,12 +515,10 @@ Let's take another look at main, this time just adding newlines between branches
 	  4008ac:	1440fff0 	bnez	v0,400870 <main+0xd0>
 	  4008b0:	00000000 	nop
 	  
-	  
 	4008b4:		8fc3001c 	lw	v1,28(s8)
 	  4008b8:	24020539 	li	v0,1337
 	  4008bc:	1462000a 	bne	v1,v0,4008e8 <main+0x148>
 	  4008c0:	00000000 	nop
-	  
 	  
 	4008c4:		3c020040 	lui	v0,0x40
 	  4008c8:	24440b2c 	addiu	a0,v0,2860
@@ -537,11 +526,9 @@ Let's take another look at main, this time just adding newlines between branches
 	  4008d0:	0040c825 	move	t9,v0
 	  4008d4:	0320f809 	jalr	t9
 	  4008d8:	00000000 	nop
-	  
 	  4008dc:	8fdc0010 	lw	gp,16(s8)
 	  4008e0:	10000008 	b	400904 <main+0x164>
 	  4008e4:	00000000 	nop
-	  
 	  
 	4008e8:		3c020040 	lui	v0,0x40
 	  4008ec:	24440b40 	addiu	a0,v0,2880
@@ -549,7 +536,6 @@ Let's take another look at main, this time just adding newlines between branches
 	  4008f4:	0040c825 	move	t9,v0
 	  4008f8:	0320f809 	jalr	t9
 	  4008fc:	00000000 	nop
-	  
 	  400900:	8fdc0010 	lw	gp,16(s8)
 	  
 	400904:		8fc20020 	lw	v0,32(s8)
@@ -559,14 +545,12 @@ Let's take another look at main, this time just adding newlines between branches
 	  400914:	27bd0038 	addiu	sp,sp,56
 	  400918:	03e00008 	jr	ra
 	  40091c:	00000000 	nop
-
 ```
 By doing this, we can get a sense for the flow of the program, and start to construct a flow graph in our mind.
 
 *It is recommended to grab a pen and some paper, and roughly sketch the graph for the program in order to get a better sense of what's happening. I will not be drawing control graphs here, because of the limitations of the medium.*
 
 The next passthrough we'll do is just seperating the [prolouge](https://en.wikipedia.org/wiki/Function_prologue), and other subroutine calls so that we can spot them easily.
-
 ```asm
 	004007a0 <main>:
 	  4007a0:	27bdffc8 	addiu	sp,sp,-56
@@ -583,12 +567,14 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  4007cc:	afc20020 	sw	v0,32(s8)
 	  4007d0:	afc00018 	sw	zero,24(s8)
 	  4007d4:	afc0001c 	sw	zero,28(s8)
+	  
 	  4007d8:	3c020040 	lui	v0,0x40
 	  4007dc:	24440af0 	addiu	a0,v0,2800
 	  4007e0:	8f828054 	lw	v0,-32684(gp)
 	  4007e4:	0040c825 	move	t9,v0
 	  4007e8:	0320f809 	jalr	t9
 	  4007ec:	00000000 	nop
+	  
 	  4007f0:	8fdc0010 	lw	gp,16(s8)
 	  4007f4:	27c20024 	addiu	v0,s8,36
 	  4007f8:	00402825 	move	a1,v0
@@ -598,6 +584,7 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  400808:	0040c825 	move	t9,v0
 	  40080c:	0320f809 	jalr	t9
 	  400810:	00000000 	nop
+	  
 	  400814:	8fdc0010 	lw	gp,16(s8)
 	  400818:	afc20020 	sw	v0,32(s8)
 	  40081c:	8fc30020 	lw	v1,32(s8)
@@ -605,24 +592,29 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  400824:	1062000a 	beq	v1,v0,400850 <main+0xb0>
 	  400828:	00000000 	nop
 	  
+	  
 	40082c:		3c020040 	lui	v0,0x40
 	  400830:	24440b14 	addiu	a0,v0,2836
 	  400834:	8f828050 	lw	v0,-32688(gp)
 	  400838:	0040c825 	move	t9,v0
 	  40083c:	0320f809 	jalr	t9
 	  400840:	00000000 	nop
+	  
 	  400844:	8fdc0010 	lw	gp,16(s8)
 	  400848:	1000002e 	b	400904 <main+0x164>
 	  40084c:	00000000 	nop
+	  
 	  
 	400850:		2404000a 	li	a0,10
 	  400854:	8f828044 	lw	v0,-32700(gp)
 	  400858:	0040c825 	move	t9,v0
 	  40085c:	0320f809 	jalr	t9
 	  400860:	00000000 	nop
+	  
 	  400864:	8fdc0010 	lw	gp,16(s8)
 	  400868:	1000000c 	b	40089c <main+0xfc>
 	  40086c:	00000000 	nop
+	  
 	  
 	400870:		8fc20018 	lw	v0,24(s8)
 	  400874:	27c30018 	addiu	v1,s8,24
@@ -636,6 +628,7 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  400894:	24420001 	addiu	v0,v0,1
 	  400898:	afc20018 	sw	v0,24(s8)
 	  
+	  
 	40089c:		8fc20018 	lw	v0,24(s8)
 	  4008a0:	27c30018 	addiu	v1,s8,24
 	  4008a4:	00621021 	addu	v0,v1,v0
@@ -643,10 +636,12 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  4008ac:	1440fff0 	bnez	v0,400870 <main+0xd0>
 	  4008b0:	00000000 	nop
 	  
+	  
 	4008b4:		8fc3001c 	lw	v1,28(s8)
 	  4008b8:	24020539 	li	v0,1337
 	  4008bc:	1462000a 	bne	v1,v0,4008e8 <main+0x148>
 	  4008c0:	00000000 	nop
+	  
 	  
 	4008c4:		3c020040 	lui	v0,0x40
 	  4008c8:	24440b2c 	addiu	a0,v0,2860
@@ -654,9 +649,11 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  4008d0:	0040c825 	move	t9,v0
 	  4008d4:	0320f809 	jalr	t9
 	  4008d8:	00000000 	nop
+	  
 	  4008dc:	8fdc0010 	lw	gp,16(s8)
 	  4008e0:	10000008 	b	400904 <main+0x164>
 	  4008e4:	00000000 	nop
+	  
 	  
 	4008e8:		3c020040 	lui	v0,0x40
 	  4008ec:	24440b40 	addiu	a0,v0,2880
@@ -664,6 +661,7 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  4008f4:	0040c825 	move	t9,v0
 	  4008f8:	0320f809 	jalr	t9
 	  4008fc:	00000000 	nop
+	  
 	  400900:	8fdc0010 	lw	gp,16(s8)
 	  
 	400904:		8fc20020 	lw	v0,32(s8)
@@ -673,6 +671,7 @@ The next passthrough we'll do is just seperating the [prolouge](https://en.wikip
 	  400914:	27bd0038 	addiu	sp,sp,56
 	  400918:	03e00008 	jr	ra
 	  40091c:	00000000 	nop
+
 ```
 There we go. Before even trying to understand what the code does, we can look structure it in such a way that helps us deal with it more easily.
 
@@ -700,15 +699,48 @@ The prolouge of the function sets up the stack and zeros out variables. Let's ta
 ```
 The prolouge can be divided into 3 parts:
 1. Allocating space on the stack (sp = sp-56) and saving the return address and the frame pointer.
-2. Setting up the global pointer.
+2. Setting up the global pointer, which we'll use to read strings from .rodata or call C Standard Library functions from the symbol table.
 3. Zeroing out some variables on the stack, storing 0x1 at $sp+32 (s8 == sp).
 
 Let's take a close look at #2:
 ```asm
-  4007b0:	lui		gp,0x42
-  4007b4:	addiu	gp,gp,-28656
+  4007b0:	lui			gp,0x42
+  4007b4:	addiu		gp,gp,-28656
  ```
-This code can be translated to python as follows:
+This code can be translated to pseudo-python as follows:
 ```python
 gp = (0x42 << 16) - 28656 # 4296720 (0x419010)
+stack[16] = gp # This is inaccurate, but it's difficult to represent a stack in python.
 ```
+Well, if `$gp` just ends up with a value of `0x419010`, why not just use a simple `addiu` like so:
+```asm
+	addiu gp, 0x419010
+```
+There's a reason for that, and it's stemming from necessity. If you think back to the MIPS overview, you'll remember that in order to use immediates we'll have to rely on an I-type instruction. I-type instructions, by design, can only contain 16-bit offsets. Since the value of 0x419010 exceeds 16-bits, we'll have to find some other way to load the high 16-bits into `$gp`.
+
+To do that, we'll use a `lui` instruction, which stores the immediate it gets as the **high** 16 bits of a register. And so, we can manipulate the original offset (0x419010) such that it is calculated using two instructions. This method is used extensivly throughout the code, as it is our only way of addressing the high regions of the memory space, where all our globals are loaded.
+
+Now that we've analyzed the prolouge, let's move on.
+
+### Main Body
+In order to see the bigger picture, we'll need to dive into pieces of code in order to decipher them. We've done all that we possibly can in order to simplify the process for us, but now we have no choice but to take our divided function and analyze each part seperatly so we can see how it fits into the bigger picture.
+
+#### 0x4007d8 - 0x4007ec
+```asm
+	  4007d8:	lui		v0,0x40
+	  4007dc:	addiu	a0,v0,2800
+	  4007e0:	lw		v0,-32684(gp)
+	  4007e4:	move	t9,v0
+	  4007e8:	jalr	t9
+	  4007ec:	nop
+```
+As we've already established, we'll use the `lui` instruction and the global pointer `gp` in order to access C Standard Library functions and globals such as strings stored in the .rodata section.
+
+Here we can see both of these use cases in action.
+The `jalr` instruction is used in order to execute a subroutine call, that much we know from our MIPS overview. We also know that `$a0 - $a4` are arguments for the subroutine call. If so, we can already tell that this piece of code executes the following pseudo code:
+```c
+function = **SOME_CALCULATED_ADDRESS**;
+argument = **SOME_CALCULATED_ADDRESS**;
+function(argument);
+```
+
