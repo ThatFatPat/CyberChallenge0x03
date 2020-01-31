@@ -1088,10 +1088,43 @@ Just by looking at this piece of code, we can maybe catch a vibe of what it's tr
 	4008a0: addiu	v1,s8,24
 	4008a4: addu	v0,v1,v0
 	4008a8: lb	v0,12(v0)
+	
 	4008ac: bnez	v0,400870 <main+0xd0>
 	4008b0: nop
 ```
-Before examining the next piece of code, please notice that I've kept in the last piece of code, the reason for this should become clear momentairly.
+Before examining the next piece of code, please notice that I've kept in the last piece of code we've analyzed, for reasons that should become clear momentairly.
 
-The first piece of code here seems very complicated at first.
+The first piece of code here seems to be a replication of the last piece of code that we've just analyzed. Why then would this code be duplicated? It's not like `$v0` or `$v1` changed since the last time this piece of code ran... This is an odd detail without seeing the bigger picture. But it is another hint as to the purpose of this code.
 
+The next instruction moves `$v0` to `$v1`. This means that both `$v0` and `$v1` now contain the loaded character. The next set of instructions can be simplified to the following pseudo-code:
+```c
+*($sp+28) += $v1
+```
+We are adding `$v1` to a location in memory. Because of the RISC philosophy, we have to use an intermediate register in order to perform the operation.
+What this basically means is that we're adding the char we loaded to the value stored at `28(sp)`
+
+The next set of instructions, which is the last new batch, can also be simplified as such:
+```c
+*($sp+24) += 1
+```
+Which is basically just incrementing the value stored at `24(sp)`.
+
+And then we get back to the same set of instructions we've already analyzed, loading a char into `$v0`. Only this time, since we've added 0x1 to the zero value stored in `24(sp)`, The operation will reference the next char in the string, as follows:
+```c
+v0 = (int)(*(v1+v0+12));
+```
+Which is equal to roughly:
+```c
+v0 = (int)(*(sp+37));
+```
+And so, as long as we haven't reached a null terminator, we will keep **looping** over the string we got as input and perform the following operations:
+```c
+int i; # 24(sp)
+int sum; # 28(sp)
+char buf[10]; 36(sp)
+
+while ( buf[i] != 0 ){
+	sum = sum + buf[i];
+	i++;
+}
+```
