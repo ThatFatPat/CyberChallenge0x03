@@ -266,7 +266,11 @@ Looking at the output of `objdump`, we already have one important piece of infor
 Equipped with this information, we can start reversing our binary.
 
 ### A Quick Overview of the MIPS Architecture
+**Before we take a look at the MIPS Architecture, a quick disclaimer**: I'm no authority on the MIPS architecture, nor am I able to share all of my knowledge on the topic in such short form. Therfore, this overview has gaps in it, stemming from lack of time and ability to cram massive amounts of material into a challenge guide. If you'd like to deep-dive into the MIPS architecture, I encourage you to take a look at [this](https://courses.cs.washington.edu/courses/cse378/11wi/lectures.html) lovely course offered by UW, or alternativley, take the course Computer Structures at TAU, which covers all of the topics discussed here at length.
 
+With that out of the way, let's take a look at the MIPS ISA (Instruction Set Architecture).
+
+The MIPS ISA is based on the RISC philosophy
 
 | Number | Name | Purpose |
 |--------|------|---------|
