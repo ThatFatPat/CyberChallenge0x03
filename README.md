@@ -72,8 +72,46 @@ In order to actually set up the `chroot`:
 * `sudo cp /usr/bin/qemu-mips-static chroot_jail/bin`
 * `sudo cp challenge3 chroot_jail/bin`
 
-What we've done is taken all of the MIPS binaries we installed when installing `libc6-mips-cross` and moved them into our chroot directory, that way we have access to all the MIPS binaries our program might want to link against.
+What we've done is taken all of the compiled MIPS binaries we installed when installing `libc6-mips-cross` and moved them into our chroot directory, that way we have access to all the MIPS binaries our program might want to link against.
 In addition, we've moved our `qemu-mips-static` (static means it can function without linking against our standard library) executable into our new `bin` directory, as well as the challenge, which is the executable we want to execute.
 
+Now that we've created out `chroot` jail, we can go ahead and test it.
+
+### First Run
+We'll run our challenge program by `cd`-ing into our `chroot_jail` (Keep in mind this is important as the `chroot`-ed programs are unaware of the directory structure outside of our `chroot_jail` by design), and executing the following command:
+
+```console
+user@pc$ sudo chroot . qemu-mips-static bin/challenge3
+```
+Basically, we are passing the `challenge3` executable to `qemu-mips-static` so it can run it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+| Number | Name | Purpose |
+|--------|------|---------|
+| $0 | $0 | Always 0 |
+| $1 | $at | The Assembler Temporary used by the assembler in expanding pseudo-ops. |
+| $2-$3 | $v0-$v1 | These registers contain the Returned Value of a subroutine; if the value is 1 word only $v0 is significant. |
+| $4-$7 | $a0-$a3 | The Argument registers, these registers contain the first 4 argument values for a subroutine call. |
+| $8-$15,$24,$25 | $t0-$t9 | The Temporary Registers. |
+| $16-$23 | $s0-$s7 | The Saved Registers. |
+| $26-$27 | $k0-$k1 | The Kernel Reserved registers. DO NOT USE. |
+| $28 | $gp | The Globals Pointer used for addressing static global variables. |
+| $29 | $sp | The Stack Pointer. |
+| $30 | $fp (or $s8) | The Frame Pointer |
+| $31 | $ra | The Return Address in a subroutine call. |
+
+###### Adapted from UW CSE410 ([Source](https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf)
 
 
