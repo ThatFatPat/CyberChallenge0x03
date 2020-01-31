@@ -85,11 +85,21 @@ user@pc$ sudo chroot . qemu-mips-static bin/challenge3
 ```
 Basically, we are passing the `challenge3` executable to `qemu-mips-static` so it can run it.
 
+The output we get is simple enough:
+```
+Please, enter a password : 
+```
+And should we try to enter one:
+```
+Please, enter a password : AAAAAAAAAAAAAAAAAAA
 
+wrong password!
+```
 
+To be expected. But we can fix that, now can't we?
+And so, our journey begins.
 
-
-
+## Reversing The Binary
 
 
 
@@ -104,7 +114,7 @@ Basically, we are passing the `challenge3` executable to `qemu-mips-static` so i
 | $1 | $at | The Assembler Temporary used by the assembler in expanding pseudo-ops. |
 | $2-$3 | $v0-$v1 | These registers contain the Returned Value of a subroutine; if the value is 1 word only $v0 is significant. |
 | $4-$7 | $a0-$a3 | The Argument registers, these registers contain the first 4 argument values for a subroutine call. |
-| $8-$15,$24,$25 | $t0-$t9 | The Temporary Registers. |
+| $8-$15, $24,$25 | $t0-$t9 | The Temporary Registers. |
 | $16-$23 | $s0-$s7 | The Saved Registers. |
 | $26-$27 | $k0-$k1 | The Kernel Reserved registers. DO NOT USE. |
 | $28 | $gp | The Globals Pointer used for addressing static global variables. |
@@ -112,6 +122,6 @@ Basically, we are passing the `challenge3` executable to `qemu-mips-static` so i
 | $30 | $fp (or $s8) | The Frame Pointer |
 | $31 | $ra | The Return Address in a subroutine call. |
 
-###### Adapted from UW CSE410 ([Source](https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf)
+###### Adapted from UW CSE410 ([Source](https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf))
 
 
