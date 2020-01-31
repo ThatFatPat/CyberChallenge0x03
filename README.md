@@ -77,7 +77,7 @@ In addition, we've moved our `qemu-mips-static` (static means it can function wi
 
 Now that we've created out `chroot` jail, we can go ahead and test it.
 
-### First Run
+## First Run
 We'll run our challenge program by `cd`-ing into our `chroot_jail` (Keep in mind this is important as the `chroot`-ed programs are unaware of the directory structure outside of our `chroot_jail` by design), and executing the following command:
 
 ```console
@@ -434,3 +434,281 @@ TODO: FINISH THIS!!!
 
 
 The MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
+
+### Examining the code
+Equipped with a basic understanding of the MIPS architecture, we can start to look through this binary and understand it's actions.
+
+Let's take another look at main, this time just adding newlines between branches and branch targets:
+```asm
+	004007a0 <main>:
+	  4007a0:	27bdffc8 	addiu	sp,sp,-56
+	  4007a4:	afbf0034 	sw	ra,52(sp)
+	  4007a8:	afbe0030 	sw	s8,48(sp)
+	  4007ac:	03a0f025 	move	s8,sp
+	  4007b0:	3c1c0042 	lui	gp,0x42
+	  4007b4:	279c9010 	addiu	gp,gp,-28656
+	  4007b8:	afbc0010 	sw	gp,16(sp)
+	  4007bc:	afc00024 	sw	zero,36(s8)
+	  4007c0:	afc00028 	sw	zero,40(s8)
+	  4007c4:	a7c0002c 	sh	zero,44(s8)
+	  4007c8:	24020001 	li	v0,1
+	  4007cc:	afc20020 	sw	v0,32(s8)
+	  4007d0:	afc00018 	sw	zero,24(s8)
+	  4007d4:	afc0001c 	sw	zero,28(s8)
+	  
+	  4007d8:	3c020040 	lui	v0,0x40
+	  4007dc:	24440af0 	addiu	a0,v0,2800
+	  4007e0:	8f828054 	lw	v0,-32684(gp)
+	  4007e4:	0040c825 	move	t9,v0
+	  4007e8:	0320f809 	jalr	t9
+	  4007ec:	00000000 	nop
+	  
+	  4007f0:	8fdc0010 	lw	gp,16(s8)
+	  4007f4:	27c20024 	addiu	v0,s8,36
+	  4007f8:	00402825 	move	a1,v0
+	  4007fc:	3c020040 	lui	v0,0x40
+	  400800:	24440b0c 	addiu	a0,v0,2828
+	  400804:	8f828040 	lw	v0,-32704(gp)
+	  400808:	0040c825 	move	t9,v0
+	  40080c:	0320f809 	jalr	t9
+	  400810:	00000000 	nop
+	  
+	  400814:	8fdc0010 	lw	gp,16(s8)
+	  400818:	afc20020 	sw	v0,32(s8)
+	  40081c:	8fc30020 	lw	v1,32(s8)
+	  400820:	24020001 	li	v0,1
+	  400824:	1062000a 	beq	v1,v0,400850 <main+0xb0>
+	  400828:	00000000 	nop
+	  
+	  
+	40082c:		3c020040 	lui	v0,0x40
+	  400830:	24440b14 	addiu	a0,v0,2836
+	  400834:	8f828050 	lw	v0,-32688(gp)
+	  400838:	0040c825 	move	t9,v0
+	  40083c:	0320f809 	jalr	t9
+	  400840:	00000000 	nop
+	  
+	  400844:	8fdc0010 	lw	gp,16(s8)
+	  400848:	1000002e 	b	400904 <main+0x164>
+	  40084c:	00000000 	nop
+	  
+	  
+	400850:		2404000a 	li	a0,10
+	  400854:	8f828044 	lw	v0,-32700(gp)
+	  400858:	0040c825 	move	t9,v0
+	  40085c:	0320f809 	jalr	t9
+	  400860:	00000000 	nop
+	  
+	  400864:	8fdc0010 	lw	gp,16(s8)
+	  400868:	1000000c 	b	40089c <main+0xfc>
+	  40086c:	00000000 	nop
+	  
+	  
+	400870:		8fc20018 	lw	v0,24(s8)
+	  400874:	27c30018 	addiu	v1,s8,24
+	  400878:	00621021 	addu	v0,v1,v0
+	  40087c:	8042000c 	lb	v0,12(v0)
+	  400880:	00401825 	move	v1,v0
+	  400884:	8fc2001c 	lw	v0,28(s8)
+	  400888:	00431021 	addu	v0,v0,v1
+	  40088c:	afc2001c 	sw	v0,28(s8)
+	  400890:	8fc20018 	lw	v0,24(s8)
+	  400894:	24420001 	addiu	v0,v0,1
+	  400898:	afc20018 	sw	v0,24(s8)
+	  
+	  
+	40089c:		8fc20018 	lw	v0,24(s8)
+	  4008a0:	27c30018 	addiu	v1,s8,24
+	  4008a4:	00621021 	addu	v0,v1,v0
+	  4008a8:	8042000c 	lb	v0,12(v0)
+	  4008ac:	1440fff0 	bnez	v0,400870 <main+0xd0>
+	  4008b0:	00000000 	nop
+	  
+	  
+	4008b4:		8fc3001c 	lw	v1,28(s8)
+	  4008b8:	24020539 	li	v0,1337
+	  4008bc:	1462000a 	bne	v1,v0,4008e8 <main+0x148>
+	  4008c0:	00000000 	nop
+	  
+	  
+	4008c4:		3c020040 	lui	v0,0x40
+	  4008c8:	24440b2c 	addiu	a0,v0,2860
+	  4008cc:	8f828050 	lw	v0,-32688(gp)
+	  4008d0:	0040c825 	move	t9,v0
+	  4008d4:	0320f809 	jalr	t9
+	  4008d8:	00000000 	nop
+	  
+	  4008dc:	8fdc0010 	lw	gp,16(s8)
+	  4008e0:	10000008 	b	400904 <main+0x164>
+	  4008e4:	00000000 	nop
+	  
+	  
+	4008e8:		3c020040 	lui	v0,0x40
+	  4008ec:	24440b40 	addiu	a0,v0,2880
+	  4008f0:	8f828050 	lw	v0,-32688(gp)
+	  4008f4:	0040c825 	move	t9,v0
+	  4008f8:	0320f809 	jalr	t9
+	  4008fc:	00000000 	nop
+	  
+	  400900:	8fdc0010 	lw	gp,16(s8)
+	  
+	400904:		8fc20020 	lw	v0,32(s8)
+	  400908:	03c0e825 	move	sp,s8
+	  40090c:	8fbf0034 	lw	ra,52(sp)
+	  400910:	8fbe0030 	lw	s8,48(sp)
+	  400914:	27bd0038 	addiu	sp,sp,56
+	  400918:	03e00008 	jr	ra
+	  40091c:	00000000 	nop
+
+```
+By doing this, we can get a sense for the flow of the program, and start to construct a flow graph in our mind.
+
+*It is recommended to grab a pen and some paper, and roughly sketch the graph for the program in order to get a better sense of what's happening. I will not be drawing control graphs here, because of the limitations of the medium.*
+
+The next passthrough we'll do is just seperating the [prolouge](https://en.wikipedia.org/wiki/Function_prologue), and other subroutine calls so that we can spot them easily.
+
+```asm
+	004007a0 <main>:
+	  4007a0:	27bdffc8 	addiu	sp,sp,-56
+	  4007a4:	afbf0034 	sw	ra,52(sp)
+	  4007a8:	afbe0030 	sw	s8,48(sp)
+	  4007ac:	03a0f025 	move	s8,sp
+	  4007b0:	3c1c0042 	lui	gp,0x42
+	  4007b4:	279c9010 	addiu	gp,gp,-28656
+	  4007b8:	afbc0010 	sw	gp,16(sp)
+	  4007bc:	afc00024 	sw	zero,36(s8)
+	  4007c0:	afc00028 	sw	zero,40(s8)
+	  4007c4:	a7c0002c 	sh	zero,44(s8)
+	  4007c8:	24020001 	li	v0,1
+	  4007cc:	afc20020 	sw	v0,32(s8)
+	  4007d0:	afc00018 	sw	zero,24(s8)
+	  4007d4:	afc0001c 	sw	zero,28(s8)
+	  4007d8:	3c020040 	lui	v0,0x40
+	  4007dc:	24440af0 	addiu	a0,v0,2800
+	  4007e0:	8f828054 	lw	v0,-32684(gp)
+	  4007e4:	0040c825 	move	t9,v0
+	  4007e8:	0320f809 	jalr	t9
+	  4007ec:	00000000 	nop
+	  4007f0:	8fdc0010 	lw	gp,16(s8)
+	  4007f4:	27c20024 	addiu	v0,s8,36
+	  4007f8:	00402825 	move	a1,v0
+	  4007fc:	3c020040 	lui	v0,0x40
+	  400800:	24440b0c 	addiu	a0,v0,2828
+	  400804:	8f828040 	lw	v0,-32704(gp)
+	  400808:	0040c825 	move	t9,v0
+	  40080c:	0320f809 	jalr	t9
+	  400810:	00000000 	nop
+	  400814:	8fdc0010 	lw	gp,16(s8)
+	  400818:	afc20020 	sw	v0,32(s8)
+	  40081c:	8fc30020 	lw	v1,32(s8)
+	  400820:	24020001 	li	v0,1
+	  400824:	1062000a 	beq	v1,v0,400850 <main+0xb0>
+	  400828:	00000000 	nop
+	  
+	40082c:		3c020040 	lui	v0,0x40
+	  400830:	24440b14 	addiu	a0,v0,2836
+	  400834:	8f828050 	lw	v0,-32688(gp)
+	  400838:	0040c825 	move	t9,v0
+	  40083c:	0320f809 	jalr	t9
+	  400840:	00000000 	nop
+	  400844:	8fdc0010 	lw	gp,16(s8)
+	  400848:	1000002e 	b	400904 <main+0x164>
+	  40084c:	00000000 	nop
+	  
+	400850:		2404000a 	li	a0,10
+	  400854:	8f828044 	lw	v0,-32700(gp)
+	  400858:	0040c825 	move	t9,v0
+	  40085c:	0320f809 	jalr	t9
+	  400860:	00000000 	nop
+	  400864:	8fdc0010 	lw	gp,16(s8)
+	  400868:	1000000c 	b	40089c <main+0xfc>
+	  40086c:	00000000 	nop
+	  
+	400870:		8fc20018 	lw	v0,24(s8)
+	  400874:	27c30018 	addiu	v1,s8,24
+	  400878:	00621021 	addu	v0,v1,v0
+	  40087c:	8042000c 	lb	v0,12(v0)
+	  400880:	00401825 	move	v1,v0
+	  400884:	8fc2001c 	lw	v0,28(s8)
+	  400888:	00431021 	addu	v0,v0,v1
+	  40088c:	afc2001c 	sw	v0,28(s8)
+	  400890:	8fc20018 	lw	v0,24(s8)
+	  400894:	24420001 	addiu	v0,v0,1
+	  400898:	afc20018 	sw	v0,24(s8)
+	  
+	40089c:		8fc20018 	lw	v0,24(s8)
+	  4008a0:	27c30018 	addiu	v1,s8,24
+	  4008a4:	00621021 	addu	v0,v1,v0
+	  4008a8:	8042000c 	lb	v0,12(v0)
+	  4008ac:	1440fff0 	bnez	v0,400870 <main+0xd0>
+	  4008b0:	00000000 	nop
+	  
+	4008b4:		8fc3001c 	lw	v1,28(s8)
+	  4008b8:	24020539 	li	v0,1337
+	  4008bc:	1462000a 	bne	v1,v0,4008e8 <main+0x148>
+	  4008c0:	00000000 	nop
+	  
+	4008c4:		3c020040 	lui	v0,0x40
+	  4008c8:	24440b2c 	addiu	a0,v0,2860
+	  4008cc:	8f828050 	lw	v0,-32688(gp)
+	  4008d0:	0040c825 	move	t9,v0
+	  4008d4:	0320f809 	jalr	t9
+	  4008d8:	00000000 	nop
+	  4008dc:	8fdc0010 	lw	gp,16(s8)
+	  4008e0:	10000008 	b	400904 <main+0x164>
+	  4008e4:	00000000 	nop
+	  
+	4008e8:		3c020040 	lui	v0,0x40
+	  4008ec:	24440b40 	addiu	a0,v0,2880
+	  4008f0:	8f828050 	lw	v0,-32688(gp)
+	  4008f4:	0040c825 	move	t9,v0
+	  4008f8:	0320f809 	jalr	t9
+	  4008fc:	00000000 	nop
+	  400900:	8fdc0010 	lw	gp,16(s8)
+	  
+	400904:		8fc20020 	lw	v0,32(s8)
+	  400908:	03c0e825 	move	sp,s8
+	  40090c:	8fbf0034 	lw	ra,52(sp)
+	  400910:	8fbe0030 	lw	s8,48(sp)
+	  400914:	27bd0038 	addiu	sp,sp,56
+	  400918:	03e00008 	jr	ra
+	  40091c:	00000000 	nop
+```
+There we go. Before even trying to understand what the code does, we can look structure it in such a way that helps us deal with it more easily.
+
+Now that we're done with the first passthrough, let's go over the function part-by-part, analyzing as we go.
+
+#### Prolouge
+The prolouge of the function sets up the stack and zeros out variables. Let's take a look:
+```asm
+  4007a0:	addiu	sp,sp,-56
+  4007a4:	sw		ra,52(sp)
+  4007a8:	sw		s8,48(sp)
+  4007ac:	move	s8,sp
+  
+  4007b0:	lui		gp,0x42
+  4007b4:	addiu	gp,gp,-28656
+  4007b8:	sw		gp,16(sp)
+  
+  4007bc:	sw		zero,36(s8)
+  4007c0:	sw		zero,40(s8)
+  4007c4:	sh		zero,44(s8)
+  4007c8:	li		v0,1
+  4007cc:	sw		v0,32(s8)
+  4007d0:	sw		zero,24(s8)
+  4007d4:	sw		zero,28(s8)
+```
+The prolouge can be divided into 3 parts:
+1. Allocating space on the stack (sp = sp-56) and saving the return address and the frame pointer.
+2. Setting up the global pointer.
+3. Zeroing out some variables on the stack, storing 0x1 at $sp+32 (s8 == sp).
+
+Let's take a close look at #2:
+```asm
+  4007b0:	lui		gp,0x42
+  4007b4:	addiu	gp,gp,-28656
+ ```
+This code can be translated to python as follows:
+```python
+gp = (0x42 << 16) - 28656 # 4296720 (0x419010)
+```
