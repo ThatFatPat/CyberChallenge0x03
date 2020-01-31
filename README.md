@@ -96,7 +96,9 @@ Please, enter a password : AAAAAAAAAAAAAAAAAAA
 wrong password!
 ```
 
-To be expected. But we can fix that, now can't we?
+To be expected. 
+
+But we can fix that, now can't we?
 And so, our journey begins.
 
 ## Reversing The Binary
