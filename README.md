@@ -844,3 +844,9 @@ Let's apply the offset of .rodata and store them in a table, so we can refer bac
 | 0x0400b40 | 0x11 	| "wrong password! \x00" |
 
 ###### Note: \x00 is of course the null-terminator, and is calculated into length.
+
+Looking at the table, we can easily recognize the address as the "Please, enter a password : " string that greets us upon running the program. From this, it's also easy to make an educated guess about the function being passed the string, seeing as it prints it to the console. We now know it's probably either `printf` or `puts`, but we still can't be sure.
+
+Let's now take a look at the second address - `0x411064`:
+
+We know this address resides inside the Global Offset Table, which is a table storing address for position-independent code. For a detailed explanation on this section, please refer to [this](https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html) lovely blog post.
