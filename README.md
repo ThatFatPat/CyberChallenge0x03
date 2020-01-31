@@ -931,3 +931,43 @@ This is a lot of information, but right at the end we can find the table we're l
 	  4007e4:	move	t9,v0
 	  4007e8:	jalr	t9
 ```
+
+If so, this simple piece of code can be translated into:
+```c
+printf("Please, enter a password : ");
+```
+
+Moving forward, We'll assume we know how to parse function calls and string references, as per this lengthy walkthrough.
+
+#### 0x4007f0 - 0x400810
+```asm
+	  4007f0:	lw		gp,16(s8)
+	  
+	  4007f4:	addiu	v0,s8,36
+	  4007f8:	move	a1,v0
+	  4007fc:	lui		v0,0x40
+	  400800:	addiu	a0,v0,2828
+	  400804:	lw		v0,-32704(gp)
+	  400808:	move	t9,v0
+	  40080c:	jalr	t9
+	  400810:	nop
+```
+The first instruction here restores `$gp` from the stack, where we stored it in the prolouge. (This is in case it was clobbered by the `printf` call)
+
+This lovely piece of code simply calls one function from the standard library with 2 arguments, `$a0` and `$a1`.
+Since we already know how to extract the called function from this code, we can easily find that we are in fact calling `__isoc99_scanf`, which is basically just [`scanf`](https://www.tutorialspoint.com/c_standard_library/c_function_scanf.htm). 
+
+`scanf` takes a format string and a pointer to a buffer on which to store a string from standard input into (while parsing it using our supplied format string).
+
+Let's parse the arguments.
+
+* `$a0` is again refercing memory inside the `.rodata` section, and we can use the string table we've constructed to find that it is in fact referecing the string `"%10s"`, which makes sense as it is indeed a format string, taking a 10-character string.
+* `$a1` is pointed at `$s8+36`, which is equivelant to `$sp+36`. From the signature of `scanf` we can tell that this is in fact the address to which our string will be saved.
+
+From this piece of code, we've learned that the C implementation most likely includes the following lines:
+```c
+char buf[10]; // This variable is found at $sp+36
+scanf("%10s", &buf);
+```
+Awesome. We are slowly piecing together this code.
+
