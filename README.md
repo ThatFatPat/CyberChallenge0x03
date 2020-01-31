@@ -284,8 +284,8 @@ The main differences between RISC and CISC can be summarized as follows:
 ###### * Please read the supplied article 
 ###### More information on the topic can be found [here](https://cs.stanford.edu/people/eroberts/courses/soco/projects/risc/risccisc/)
 
-#### Registers
-The MIPS ISA specifies 32 registers. Use the following table as a reference:
+#### General Purpose Registers
+The MIPS ISA specifies 32 general purpose registers. Use the following table as a reference:
 
 | Number | Name | Purpose |
 |--------|------|---------|
@@ -303,4 +303,41 @@ The MIPS ISA specifies 32 registers. Use the following table as a reference:
 
 ###### Adapted from UW CSE410 ([Source](https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf))
 
+#### Instruction Set
+In accordance with the RISC philosophy, MIPS instructions are fixed size. Each instruction is exactly one word, where a word is 32 bits.
 
+Instructions are divided into three types: R, I and J. Every instruction starts with a 6-bit opcode. In addition to the opcode, R-type instructions specify three registers, a shift amount field, and a function field; I-type instructions specify two registers and a 16-bit immediate value; J-type instructions follow the opcode with a 26-bit jump target.
+
+The following are the three formats used for the core instruction set:
+
+<table>
+
+<tbody><tr>
+<th>Type</th>
+<th colspan="6">-31- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; format (bits) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -0-
+</th></tr>
+<tr align="center">
+<td><b>R</b></td>
+<td>000000</td>
+<td>rs (5)</td>
+<td>rt (5)</td>
+<td>rd (5)</td>
+<td>shamt (5)</td>
+<td>funct (6)
+</td></tr>
+<tr align="center">
+<td><b>I</b></td>
+<td>opcode (6)</td>
+<td>rs (5)</td>
+<td>rt (5)</td>
+<td colspan="3">immediate (16)
+</td></tr>
+<tr align="center">
+<td><b>J</b></td>
+<td>opcode (6)</td>
+<td colspan="5">address (26)
+</td></tr></tbody></table>
+
+###### [Source](https://en.wikipedia.org/wiki/MIPS_architecture)
+
+The instruction set for the MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
