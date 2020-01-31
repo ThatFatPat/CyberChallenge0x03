@@ -414,9 +414,14 @@ For our purposes, here are a few important instructions with their description:
 | Syntax: | lw $t, offset($s) |
 | Encoding: | 1000 11ss ssst tttt iiii iiii iiii iiii |
 
+|**SW (Store word to memory)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | The contents of $t is stored at the specified address  |
+| Operation: | MEM[$s + offset] = $t; advance_pc (4); |
+| Syntax: | sw $t, offset($s) |
+| Encoding: | 1010 11ss ssst tttt iiii iiii iiii iiii |
 
-LW
-SW
 LUI
 LI
 LB
@@ -425,5 +430,7 @@ JAL
 JALR
 JR
 
+TODO: FINISH THIS!!!
 
-The instruction set for the MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
+
+The MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
