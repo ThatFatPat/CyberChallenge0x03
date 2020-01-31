@@ -270,7 +270,19 @@ Equipped with this information, we can start reversing our binary.
 
 With that out of the way, let's take a look at the MIPS ISA (Instruction Set Architecture).
 
-The MIPS ISA is based on the RISC philosophy
+#### RISC vs. CISC
+The MIPS ISA is based on the RISC philosophy, standing for 'Reduced Instruction Set Computer'. This is opposed to the CISC approach (Complex Instruciton Set Computer), supported by the likes of Intel's x86. The debate around the two philosophies arose around the early 1980's. Today, only Intel's x86 still supports the CISC philosophy, while most other architectures, such as ARM and MIPS, use the RISC approach when implementing their ISAs.
+
+The main differences between RISC and CISC can be summarized as follows:
+
+| RISC | CISC |
+|------|------|
+| Set length instructions | Variable length instructions |
+| Stronger reliance on software | More reliance on hardware-implemented routines |
+| More seperation between memory and registers, LOAD and STORE are seperate instructions | Can perform operations on memory |
+
+More information on the topic can be found [here](https://cs.stanford.edu/people/eroberts/courses/soco/projects/risc/risccisc/)
+
 
 | Number | Name | Purpose |
 |--------|------|---------|
