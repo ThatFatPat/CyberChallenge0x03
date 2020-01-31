@@ -680,13 +680,13 @@ Now that we're done with the first passthrough, let's go over the function part-
 #### Prolouge
 The prolouge of the function sets up the stack and zeros out variables. Let's take a look:
 ```asm
-  4007a0:	addiu	sp,sp,-56
+  4007a0:	addiu		sp,sp,-56
   4007a4:	sw		ra,52(sp)
   4007a8:	sw		s8,48(sp)
-  4007ac:	move	s8,sp
+  4007ac:	move		s8,sp
   
   4007b0:	lui		gp,0x42
-  4007b4:	addiu	gp,gp,-28656
+  4007b4:	addiu		gp,gp,-28656
   4007b8:	sw		gp,16(sp)
   
   4007bc:	sw		zero,36(s8)
@@ -705,7 +705,7 @@ The prolouge can be divided into 3 parts:
 Let's take a close look at #2:
 ```asm
   4007b0:	lui		gp,0x42
-  4007b4:	addiu	gp,gp,-28656
+  4007b4:	addiu		gp,gp,-28656
  ```
 This code can be translated to pseudo-python as follows:
 ```python
@@ -728,10 +728,10 @@ In order to see the bigger picture, we'll need to dive into pieces of code in or
 #### 0x4007d8 - 0x4007ec
 ```asm
 	  4007d8:	lui		v0,0x40
-	  4007dc:	addiu	a0,v0,2800
+	  4007dc:	addiu		a0,v0,2800
 	  4007e0:	lw		v0,-32684(gp)
-	  4007e4:	move	t9,v0
-	  4007e8:	jalr	t9
+	  4007e4:	move		t9,v0
+	  4007e8:	jalr		t9
 	  4007ec:	nop
 ```
 As we've already established, we'll use the `lui` instruction and the global pointer `gp` in order to access C Standard Library functions and globals such as strings stored in the .rodata section.
@@ -928,8 +928,8 @@ This is a lot of information, but right at the end we can find the table we're l
  There we go, much better. Now that we know how to parse the address, we can see that `0x411064` refers to our friend `printf`. Also, a nice detail is that the access column corresponds to the original `addi` we used in order to load the address into our `$t9` register:
  ```asm
  	  4007e0:	lw		v0,-32684(gp)
-	  4007e4:	move	t9,v0
-	  4007e8:	jalr	t9
+	  4007e4:	move		t9,v0
+	  4007e8:	jalr		t9
 ```
 
 If so, this simple piece of code can be translated into:
@@ -943,13 +943,13 @@ Moving forward, We'll assume we know how to parse function calls and string refe
 ```asm
 	  4007f0:	lw		gp,16(s8)
 	  
-	  4007f4:	addiu	v0,s8,36
-	  4007f8:	move	a1,v0
+	  4007f4:	addiu		v0,s8,36
+	  4007f8:	move		a1,v0
 	  4007fc:	lui		v0,0x40
-	  400800:	addiu	a0,v0,2828
+	  400800:	addiu		a0,v0,2828
 	  400804:	lw		v0,-32704(gp)
-	  400808:	move	t9,v0
-	  40080c:	jalr	t9
+	  400808:	move		t9,v0
+	  40080c:	jalr		t9
 	  400810:	nop
 ```
 The first instruction here restores `$gp` from the stack, where we stored it in the prolouge. (This is in case it was clobbered by the `printf` call)
