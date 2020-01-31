@@ -843,4 +843,4 @@ Let's apply the offset of .rodata and store them in a table, so we can refer bac
 | 0x0400b2c | 0x13 	| "correct password! \x00" |
 | 0x0400b40 | 0x11 	| "wrong password! \x00" |
 
-###### Note: \x00 is of courese the null-terminator, and is calculated into length.
+###### Note: \x00 is of course the null-terminator, and is calculated into length.
