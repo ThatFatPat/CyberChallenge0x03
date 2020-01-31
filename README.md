@@ -1128,3 +1128,68 @@ while ( buf[i] != 0 ){
 	i++;
 }
 ```
+
+Alright! We're almost there!
+
+Let's look at the instructions immediately following the `bnez`. As soon as we've reached the end of the string, we will continue execution and reach the next piece of code.
+
+#### 0x4008b4 - 0x4008c0
+```asm
+	4008b4:	lw	v1,28(s8)
+	4008b8:	li	v0,1337
+	4008bc:	bne	v1,v0,4008e8 <main+0x148>
+	4008c0:	nop
+```
+This piece of code is significant. Note that we've already marked `28(sp)` as `sum`, which is the sum of all the characters in our string. We can clearly see then that this branch is comparing our sum to `1337` (L33T). If our `sum` does not match the magic number, we branch to `0x4008e8`. Let's assume for a moment that we've somehow reached the magic number. If so, we execute the following piece of code next:
+
+#### 0x4008c4 - 0x4008e4
+```asm
+	4008c4:	lui	v0,0x40
+	4008c8:	addiu	a0,v0,2860
+	4008cc:	lw	v0,-32688(gp)
+	4008d0:	move	t9,v0
+	4008d4:	jalr	t9
+	4008d8:	nop
+
+	4008dc:	lw	gp,16(s8)
+	4008e0:	b	400904 <main+0x164>
+	4008e4:	nop
+```
+The last piece of code simply restores `$gp` and branches unconditionally to `0x400904`.
+
+It's the first piece of code that we're interested in here. If we take a look at the function reference table that we've constructed, we can see that we're calling `puts` here. It's the argument we're passing I'm most interested in, in this case. Constructing the address and matching it against our string table will inform us that the string passed to puts is, drumroll please:
+
+"correct password! "
+
+**Bingo.**
+
+Now that we've figured out how to get to our desired outcome, let's quickly reconstruct the original C code.
+
+### Source
+I've filled in the parts we haven't analyzed, such as the "wrong password! " print and some other minor details.
+```c
+int main(){
+	int i;
+	int sum;
+	char buf[10] = {0}; // Zeroing out the buffer
+
+	printf("Please, enter a password : ");
+	ret = scanf("%10s", &buf);
+	if (ret == 1){
+		while ( buf[i] != 0 ){
+			sum = sum + buf[i];
+			i++;
+		}
+		if (sum == 1337){
+			puts("correct password! ");
+		}
+		else{
+			puts("wrong password! ");
+		}
+	}
+	else {
+		puts("no password entered! ");
+	}
+return 1;
+}
+```
