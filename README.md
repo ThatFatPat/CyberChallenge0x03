@@ -382,5 +382,48 @@ For our purposes, here are a few important instructions with their description:
 | Syntax: | beq $s, $t, offset |
 | Encoding: | 0001 00ss ssst tttt iiii iiii iiii iiii |
 
+|**BNE (Branch if not equal)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Branches if the two registers are not equal |
+| Operation: | if $s != $t advance_pc (offset << 2)); else advance_pc (4); |
+| Syntax: | bne $s, $t, offset |
+| Encoding: | 0001 01ss ssst tttt iiii iiii iiii iiii |
+
+|**B (Branch unconditionally)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Branches unconditionally |
+| Operation: | advance_pc (offset << 2) |
+| Syntax: | b offset |
+| Encoding: | Pseudo-instruction. Implemented as beq $zero, $zero, offset |
+
+|**BNEZ (Branch if not equal to zero)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Branches if the register is equal to zero |
+| Operation: | if $s == 0 advance_pc (offset << 2)); else advance_pc (4); |
+| Syntax: | bnez $s, offset |
+| Encoding: | Pseudo-instruction. Implemented as bne $s, $zero, offset |
+
+|**LW (Load word from memory)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | A word is loaded into a register from the specified address |
+| Operation: | $t = MEM[$s + offset]; advance_pc (4); |
+| Syntax: | lw $t, offset($s) |
+| Encoding: | 1000 11ss ssst tttt iiii iiii iiii iiii |
+
+
+LW
+SW
+LUI
+LI
+LB
+LBU
+JAL
+JALR
+JR
+
 
 The instruction set for the MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
