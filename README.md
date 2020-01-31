@@ -1052,7 +1052,7 @@ Not very helpful is it... Well there's still some things we can do in order to p
 
 From the prolouge, we know that `24(sp)` is zeroed out, and since we haven't touched it anywhere since it should stay that way. We also know that `36(sp)` stores our string. This will probably come in handy. If these are true, `24(sp)` being loaded into `$v0` in fact zeroes it out. We also see that the address `sp+24` is moved to `$v1`.
 
-The next thing that happens is may take a moment to parse, but in fact it is:
+The next thing that happens may take a moment to parse, but in fact it is:
 ```c
 v0 = (int)(*(v1+v0+12));
 ```
@@ -1067,5 +1067,31 @@ The next instruction simply compares our byte to `\x00`, the null terminator, an
 
 Just by looking at this piece of code, we can maybe catch a vibe of what it's trying to do. But if we still don't know, we can just keep following the code in order to find out.
 
+#### 0x400870 - 0x4008b0
+```asm
+	400870: lw	v0,24(s8)
+	400874: addiu	v1,s8,24
+	400878: addu	v0,v1,v0
+	40087c: lb	v0,12(v0)
+	
+	400880: move	v1,v0
+	
+	400884: lw	v0,28(s8)
+	400888: addu	v0,v0,v1
+	40088c: sw	v0,28(s8)
+	
+	400890: lw	v0,24(s8)
+	400894: addiu	v0,v0,1
+	400898: sw	v0,24(s8)
 
+	40089c: lw	v0,24(s8)
+	4008a0: addiu	v1,s8,24
+	4008a4: addu	v0,v1,v0
+	4008a8: lb	v0,12(v0)
+	4008ac: bnez	v0,400870 <main+0xd0>
+	4008b0: nop
+```
+Before examining the next piece of code, please notice that I've kept in the last piece of code, the reason for this should become clear momentairly.
+
+The first piece of code here seems very complicated at first.
 
