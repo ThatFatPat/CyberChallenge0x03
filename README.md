@@ -306,7 +306,7 @@ The MIPS ISA specifies 32 general purpose registers. Use the following table as 
 #### Instruction Set
 In accordance with the RISC philosophy, MIPS instructions are fixed size. Each instruction is exactly one word, where a word is 32 bits.
 
-Instructions are divided into three types: R, I and J. Every instruction starts with a 6-bit opcode. In addition to the opcode, R-type instructions specify three registers, a shift amount field, and a function field; I-type instructions specify two registers and a 16-bit immediate value; J-type instructions follow the opcode with a 26-bit jump target.
+Instructions are divided into three types: R, I and J. Every instruction starts with a 6-bit opcode. (For R-type instructions this is always 0). In addition to the opcode, R-type instructions specify three registers, a shift amount field, and a function field; I-type instructions specify two registers and a 16-bit immediate value; J-type instructions follow the opcode with a 26-bit jump target.
 
 The following are the three formats used for the core instruction set:
 
@@ -339,5 +339,48 @@ The following are the three formats used for the core instruction set:
 </td></tr></tbody></table>
 
 ###### [Source](https://en.wikipedia.org/wiki/MIPS_architecture)
+
+For our purposes, here are a few important instructions with their description:
+
+|**ADD (Signed - with overflow)** | |
+|-|-|
+| Type:	        | R-type						 |
+| Description:  | Adds two registers and stores the result in a register |
+| Operation:    | $d = $s + $t; advance_pc (4); 		 	 |
+| Syntax:       | add $d, $s, $t 			 		 |
+| Encoding:     | 0000 00ss ssst tttt dddd d000 0010 0000 		 |
+
+|**ADDU (Unsigned - no overflow)** | |
+|-|-|
+| Type:	       | R-type							|
+| Description: | Adds two registers and stores the result in a register |
+| Operation:   | $d = $s + $t; advance_pc (4); 		 		|
+| Syntax:      | addu $d, $s, $t 			 		|
+| Encoding:    | 0000 00ss ssst tttt dddd d000 0010 0001 		|
+
+|**ADDI (Signed - with overflow, Immediate)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Adds a register and a sign-extended immediate value and stores the result in a register |
+| Operation:   | $t = $s + imm; advance_pc (4);		 		|
+| Syntax:      | addi $t, $s, imm			 		|
+| Encoding:    | 0010 00ss ssst tttt iiii iiii iiii iiii		|
+
+|**ADDIU (Unsigned - no overflow, Immediate)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Adds a register and a sign-extended immediate value and stores the result in a register |
+| Operation:   | $t = $s + imm; advance_pc (4);		 		|
+| Syntax:      | addiu $t, $s, imm			 		|
+| Encoding:    | 0010 01ss ssst tttt iiii iiii iiii iiii		|
+
+|**BEQ (Branch if equal)** | |
+|-|-|
+| Type:	       | I-type							|
+| Description: | Branches if the two registers are equal |
+| Operation: | if $s == $t advance_pc (offset << 2)); else advance_pc (4); |
+| Syntax: | beq $s, $t, offset |
+| Encoding: | 0001 00ss ssst tttt iiii iiii iiii iiii |
+
 
 The instruction set for the MIPS ISA can be found [here](http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html). (Missing some instructions)
