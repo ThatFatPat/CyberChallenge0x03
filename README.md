@@ -704,8 +704,8 @@ The prolouge can be divided into 3 parts:
 
 Let's take a close look at #2:
 ```asm
-  4007b0:	lui			gp,0x42
-  4007b4:	addiu		gp,gp,-28656
+  4007b0:	lui		gp,0x42
+  4007b4:	addiu	gp,gp,-28656
  ```
 This code can be translated to pseudo-python as follows:
 ```python
@@ -714,7 +714,7 @@ stack[16] = gp # This is inaccurate, but it's difficult to represent a stack in 
 ```
 Well, if `$gp` just ends up with a value of `0x419010`, why not just use a simple `addiu` like so:
 ```asm
-	addiu gp, 0x419010
+	addiu 	gp, 0x419010
 ```
 There's a reason for that, and it's stemming from necessity. If you think back to the MIPS overview, you'll remember that in order to use immediates we'll have to rely on an I-type instruction. I-type instructions, by design, can only contain 16-bit offsets. Since the value of 0x419010 exceeds 16-bits, we'll have to find some other way to load the high 16-bits into `$gp`.
 
@@ -737,10 +737,82 @@ In order to see the bigger picture, we'll need to dive into pieces of code in or
 As we've already established, we'll use the `lui` instruction and the global pointer `gp` in order to access C Standard Library functions and globals such as strings stored in the .rodata section.
 
 Here we can see both of these use cases in action.
-The `jalr` instruction is used in order to execute a subroutine call, that much we know from our MIPS overview. We also know that `$a0 - $a4` are arguments for the subroutine call. If so, we can already tell that this piece of code executes the following pseudo code:
+The `jalr` instruction is used in order to execute a subroutine call, that much we know from our MIPS overview. We also know that `$a0 - $a4` are arguments for the subroutine call. If so, we can already tell that this piece of code executes the following (simplified) pseudo code:
 ```c
-function = **SOME_CALCULATED_ADDRESS**;
-argument = **SOME_CALCULATED_ADDRESS**;
-function(argument);
+t9 = **SOME_CALCULATED_ADDRESS**;
+a0 = **SOME_CALCULATED_ADDRESS**;
+t9(a0);
 ```
+If so, we should only calculate the addresses of the function and it's argument in order to solve this piece of code.
+```python
+v0 = 0x40 << 16
+a0 = v0 + 2800
+v0 = *(gp - 32684)
+t9 = v0
+```
+From this, we already know that:
 
+* `$a0 = 0x400af0`
+* `t9 = *(gp - 32684)`
+
+We can use our previously calculated value for `$gp` (0x419010) in order to calculate `$t9`'s address.
+```python
+t9 = 0x411064
+```
+So all this gives us to addresses to investigate:
+
+* `$a0 = 0x400af0`
+* `t9 = *(0x411064)`
+
+In order to investigate them, it would be helpful to know where they are located, section-wise.
+We can use `objdump` with the `-S` (capital) for Section Headers to get the following output:
+```console
+user@pc$ readelf -S bin/challenge3
+There are 32 section headers, starting at offset 0x19f4:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .interp           PROGBITS        00400194 000194 00000d 00   A  0   0  1
+  [ 2] .note.ABI-tag     NOTE            004001a4 0001a4 000020 00   A  0   0  4
+  [ 3] .MIPS.abiflags    MIPS_ABIFLAGS   004001c8 0001c8 000018 18   A  0   0  8
+  [ 4] .reginfo          MIPS_REGINFO    004001e0 0001e0 000018 18   A  0   0  4
+  [ 5] .note.gnu.build-i NOTE            004001f8 0001f8 000024 00   A  0   0  4
+  [ 6] .dynamic          DYNAMIC         0040021c 00021c 0000e0 08   A  9   0  4
+  [ 7] .hash             HASH            004002fc 0002fc 000054 04   A  8   0  4
+  [ 8] .dynsym           DYNSYM          00400350 000350 000100 10   A  9   1  4
+  [ 9] .dynstr           STRTAB          00400450 000450 0000e3 00   A  0   0  1
+  [10] .gnu.version      VERSYM          00400534 000534 000020 02   A  8   0  2
+  [11] .gnu.version_r    VERNEED         00400554 000554 000030 00   A  9   1  4
+  [12] .init             PROGBITS        00400584 000584 00007c 00  AX  0   0  4
+  [13] .text             PROGBITS        00400600 000600 000430 00  AX  0   0 16
+  [14] .MIPS.stubs       PROGBITS        00400a30 000a30 000060 00  AX  0   0  4
+  [15] .fini             PROGBITS        00400a90 000a90 000044 00  AX  0   0  4
+  [16] .rodata           PROGBITS        00400ae0 000ae0 000080 00   A  0   0 16
+  [17] .eh_frame         PROGBITS        00400b60 000b60 000004 00   A  0   0  4
+  [18] .ctors            PROGBITS        00410ff0 000ff0 000008 00  WA  0   0  4
+  [19] .dtors            PROGBITS        00410ff8 000ff8 000008 00  WA  0   0  4
+  [20] .data             PROGBITS        00411000 001000 000010 00  WA  0   0 16
+  [21] .rld_map          PROGBITS        00411010 001010 000004 00  WA  0   0  4
+  [22] .got              PROGBITS        00411020 001020 00004c 04 WAp  0   0 16
+  [23] .sdata            PROGBITS        0041106c 00106c 000004 00 WAp  0   0  4
+  [24] .bss              NOBITS          00411070 001070 000010 00  WA  0   0 16
+  [25] .comment          PROGBITS        00000000 001070 00002b 01  MS  0   0  1
+  [26] .pdr              PROGBITS        00000000 00109c 000060 00      0   0  4
+  [27] .gnu.attributes   GNU_ATTRIBUTES  00000000 0010fc 000010 00      0   0  1
+  [28] .mdebug.abi32     PROGBITS        00000000 00110c 000000 00      0   0  1
+  [29] .symtab           SYMTAB          00000000 00110c 000500 10     30  51  4
+  [30] .strtab           STRTAB          00000000 00160c 0002c5 00      0   0  1
+  [31] .shstrtab         STRTAB          00000000 0018d1 000121 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  p (processor specific)
+```
+Ugh. Lots of text. By carefully scanning the table, we can find the two relevant sections:
+```console
+  	0x0400af0: "[16] .rodata           PROGBITS        00400ae0 000ae0 000080 00   A  0   0 16"
+	0x0411064: "[22] .got              PROGBITS        00411020 001020 00004c 04 WAp  0   0 16"
+```
+This makes a lot of sense. We are calling a function from using the GOT ([Global Offset Table](https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html)), and passing it some address in `.rodata` (A section for read-only data and strings).
