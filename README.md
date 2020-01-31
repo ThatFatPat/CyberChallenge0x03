@@ -811,8 +811,36 @@ Key to Flags:
   p (processor specific)
 ```
 Ugh. Lots of text. By carefully scanning the table, we can find the two relevant sections:
+
+* 0x0400af0: `[16] .rodata           PROGBITS        00400ae0 000ae0 000080 00   A  0   0 16`
+* 0x0411064: `[22] .got              PROGBITS        00411020 001020 00004c 04 WAp  0   0 16`
+
+This makes a lot of sense. We are calling a function using the GOT ([Global Offset Table](https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html)), and passing it some address in `.rodata` (A section for read-only data and strings).
+
+Let's decipher these one by one. First, the address in `.rodata`:
+
+In order to examine this section, we can use `objdump`'s `-p` option in order to string-dump a section.
 ```console
-  	0x0400af0: "[16] .rodata           PROGBITS        00400ae0 000ae0 000080 00   A  0   0 16"
-	0x0411064: "[22] .got              PROGBITS        00411020 001020 00004c 04 WAp  0   0 16"
+user@pc$ readelf -p .rodata bin/challenge3
+
+String dump of section '.rodata':
+  [    10]  Please, enter a password : 
+  [    2c]  %10s
+  [    34]  no password entered! 
+  [    4c]  correct password! 
+  [    60]  wrong password! 
 ```
-This makes a lot of sense. We are calling a function from using the GOT ([Global Offset Table](https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html)), and passing it some address in `.rodata` (A section for read-only data and strings).
+Very nice! These are all our strings, complete with offsets from the base address of the `.rodata` section.
+Let's apply the offset of .rodata and store them in a table, so we can refer back to it later:
+
+#### String Table
+
+| Address | Length | Data |
+|---------|--------|------|
+| 0x0400af0 | 0x1c 	| "Please, enter a password : \x00" |
+| 0x0400b0c | 0x5 	| "%10s\x00" |
+| 0x0400b14 | 0x16 	| "no password entered! \x00" |
+| 0x0400b2c | 0x13 	| "correct password! \x00" |
+| 0x0400b40 | 0x11 	| "wrong password! \x00" |
+
+###### Note: \x00 is of courese the null-terminator, and is calculated into length.
