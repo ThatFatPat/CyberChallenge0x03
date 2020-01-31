@@ -765,7 +765,7 @@ So all this gives us to addresses to investigate:
 * `t9 = *(0x411064)`
 
 In order to investigate them, it would be helpful to know where they are located, section-wise.
-We can use `objdump` with the `-S` (capital) for Section Headers to get the following output:
+We can use `readelf` with the `-S` (capital) for Section Headers to get the following output:
 ```console
 user@pc$ readelf -S bin/challenge3
 There are 32 section headers, starting at offset 0x19f4:
@@ -819,7 +819,7 @@ This makes a lot of sense. We are calling a function using the GOT ([Global Offs
 
 Let's decipher these one by one. First, the address in `.rodata`:
 
-In order to examine this section, we can use `objdump`'s `-p` option in order to string-dump a section.
+In order to examine this section, we can use `readelf`'s `-p` option in order to string-dump a section.
 ```console
 user@pc$ readelf -p .rodata bin/challenge3
 
@@ -850,3 +850,84 @@ Looking at the table, we can easily recognize the address as the "Please, enter 
 Let's now take a look at the second address - `0x411064`:
 
 We know this address resides inside the Global Offset Table, which is a table storing address for position-independent code. For a detailed explanation on this section, please refer to [this](https://systemoverlord.com/2017/03/19/got-and-plt-for-pwning.html) lovely blog post.
+
+Equipped with knowledge about the GOT, we can try to use `readelf` in order to find some way to parse the GOT. By using the `-A` option for architecture-specific information, we can extract the following output:
+```console
+user@pc$ readelf -A bin/challenge3
+Attribute Section: gnu
+File Attributes
+  Tag_GNU_MIPS_ABI_FP: Hard float (32-bit CPU, Any FPU)
+
+MIPS ABI Flags Version: 0
+
+ISA: MIPS32r2
+GPR size: 32
+CPR1 size: 32
+CPR2 size: 0
+FP ABI: Hard float (32-bit CPU, Any FPU)
+ISA Extension: None
+ASEs:
+	None
+FLAGS 1: 00000000
+FLAGS 2: 00000000
+
+Primary GOT:
+ Canonical gp value: 00419010
+
+ Reserved entries:
+   Address     Access  Initial Purpose
+  00411020 -32752(gp) 00000000 Lazy resolver
+  00411024 -32748(gp) 80000000 Module pointer (GNU extension)
+
+ Local entries:
+   Address     Access  Initial
+  00411028 -32744(gp) 004007a0
+  0041102c -32740(gp) 00400920
+  00411030 -32736(gp) 004009c4
+  00411034 -32732(gp) 00400000
+  00411038 -32728(gp) 00400584
+  0041103c -32724(gp) 00410ff0
+  00411040 -32720(gp) 00000000
+  00411044 -32716(gp) 00000000
+  00411048 -32712(gp) 00000000
+
+ Global entries:
+   Address     Access  Initial Sym.Val. Type    Ndx Name
+  0041104c -32708(gp) 00000000 00000000 NOTYPE  UND _ITM_registerTMCloneTable
+  00411050 -32704(gp) 00400a70 00400a70 FUNC    UND __isoc99_scanf
+  00411054 -32700(gp) 00400a60 00400a60 FUNC    UND putchar
+  00411058 -32696(gp) 00400a50 00400a50 FUNC    UND __libc_start_main
+  0041105c -32692(gp) 00000000 00000000 FUNC    UND __gmon_start__
+  00411060 -32688(gp) 00400a40 00400a40 FUNC    UND puts
+  00411064 -32684(gp) 00400a30 00400a30 FUNC    UND printf
+  00411068 -32680(gp) 00000000 00000000 NOTYPE  UND _ITM_deregisterTMCloneTable
+```
+This is a lot of information, but right at the end we can find the table we're looking for:
+```console
+ Global entries:
+   Address     Access  Initial Sym.Val. Type    Ndx Name
+  0041104c -32708(gp) 00000000 00000000 NOTYPE  UND _ITM_registerTMCloneTable
+  00411050 -32704(gp) 00400a70 00400a70 FUNC    UND __isoc99_scanf
+  00411054 -32700(gp) 00400a60 00400a60 FUNC    UND putchar
+  00411058 -32696(gp) 00400a50 00400a50 FUNC    UND __libc_start_main
+  0041105c -32692(gp) 00000000 00000000 FUNC    UND __gmon_start__
+  00411060 -32688(gp) 00400a40 00400a40 FUNC    UND puts
+  00411064 -32684(gp) 00400a30 00400a30 FUNC    UND printf
+  00411068 -32680(gp) 00000000 00000000 NOTYPE  UND _ITM_deregisterTMCloneTable
+ ```
+ Using this information, we can construct a reference table for us to use later. We won't insert all of the boilerplate functions as to not bloat the table.
+ 
+ #### C Standard Library Function Address Reference Table
+ | Address | Access | Name |
+ |---------|--------|------|
+ | 0x00411050 | -32704(gp) | \_\_isoc99_scanf |
+ | 0x00411054 | -32700(gp) | putchar |
+ | 0x00411060 | -32688(gp) | puts |
+ | 0x00411064 | -32684(gp) | printf |
+ 
+ There we go, much better. Now that we know how to parse the address, we can see that `0x411064` refers to our friend `printf`. Also, a nice detail is that the access column corresponds to the original `addi` we used in order to load the address into our `$t9` register:
+ ```asm
+ 	  4007e0:	lw		v0,-32684(gp)
+	  4007e4:	move	t9,v0
+	  4007e8:	jalr	t9
+```
