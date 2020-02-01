@@ -1190,6 +1190,45 @@ int main(){
 	else {
 		puts("no password entered! ");
 	}
-return 1;
+return ret;
 }
 ```
+
+OK. Now that we know what the code is doing, we can get to solving it.
+
+## Solution
+
+Alright. So what do we know?
+
+* We have an executable that's taking 10 characters
+* It is then summing those characters
+* Lastly, the sum is compared to `1337`.
+
+If so, the solution should be simple. The sort of attack we are about to implement is called a "Hash Collision Attack", where in an attacker constructs a string such that running a specific hash function on it generates a desirable value. In this case, the hash function simply sums the characters, and the desired value is `1337`.
+
+Great. In this case, we can simply divide our sum of `1337` over the number of characters, and solve it that way.
+```python
+sum = 1337
+character = 1337 // 10
+last_char = character + (1337 % 10)
+if 1337 == (character * 9) + last_char: # If we actually have the right string
+	print(repr((chr(character) * 9) + chr(last_char))) # Print the hex representation.
+```
+And if we run the code, we get the following string:
+```
+\x85\x85\x85\x85\x85\x85\x85\x85\x85\x8c
+```
+Awesome. Now let's plug it to our program using `echo`:
+```console
+user@pc$ echo -n -e "\x85\x85\x85\x85\x85\x85\x85\x85\x85\x8c" | sudo chroot . qemu-mips-static bin/challenge3
+Please, enter a password : 
+
+wrong password! 
+```
+Wait, what?
+
+Maybe there's something wrong with our calculations? Well, going over them leaves no room for wondering, nothing is wrong with our calculations. Something else must be at play here.
+
+If we can't solve it just by staring at the code until it confesses, we can do the next best thing. Let's use `gdb` in order to see what's happening here.
+
+### Debugging with
