@@ -1346,7 +1346,7 @@ Extension referes to the process of loading a number represented by a number of 
 Well, there are two options:
 
 * Zero extension - Filling the rest of the bits with 0, and possibly losing sign information when using the 2's complement method. By zero extension, we are in fact treating the value as an unsigned value.
-* Sign extension - The alternative method is filling the rest of the bits with sign-matching bits: if the number is negative, fill them with `1` bits. If the number is positi(https://en.wikipedia.org/wiki/Two%27s_complement)ve, fill them with `0`.
+* Sign extension - The alternative method is filling the rest of the bits with sign-matching bits: if the number is negative, fill them with `1` bits. If the number is positive, fill them with `0`.
 
 In order to understand why exactly this happens it is recommended to know how 2's complement works, and as such I should recommend again that you read into it [here](https://en.wikipedia.org/wiki/Two%27s_complement). This writeup has already become too long for me to delve into the topic.
 
