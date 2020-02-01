@@ -1309,6 +1309,54 @@ Now that we've reached the breakpoint, let's look at the registers again.
 ``` 
 Now we can see that the value of `$v0` is `0xffffff85`. Why is `$v0` getting this value, and not just `0x85`? Let's try feeding our program some other character, maybe `A`s wil work.
 ```console
-user@pc$ echo -n -e "AAAAAAAAAA" | sudo chroot . qemu-mips-static bin/challenge3
+user@pc$ echo -n -e "AAAAAAAAAA" | sudo chroot . qemu-mips-static -g 12345 bin/challenge3
 ```
+By getting to the same breakpoint, we can look at the registers again:
+```console
+(gdb) info registers
+          zero       at       v0       v1       a0       a1       a2       a3
+ R0   00000000 00000001 00000041 7ffff680 7f7c4e2c ffffffff 00000001 00000000 
+            t0       t1       t2       t3       t4       t5       t6       t7
+ R8   7f6a2840 00000000 00000b64 7f7fe300 00000001 7f643ff8 7f63a918 00000486 
+            s0       s1       s2       s3       s4       s5       s6       s7
+ R16  00000000 00400920 00000000 00000000 00000000 00000000 00000000 00000000 
+            t8       t9       k0       k1       gp       sp       s8       ra
+ R24  00000000 7f73e930 00000000 00000000 00419010 7ffff668 7ffff668 00400864 
+            sr       lo       hi      bad    cause       pc
+      20000010 0001f324 00000216 00000000 00000000 004008ac 
+           fsr      fir
+      00000000 00739300 
+```
+This time, `$v0` is indeed getting the currect hex value for `A`, which all of us pwners know well by now is `0x41`.
 
+OK. What in the world is happening then? This took a few minutes to figure out, but then it hit me: **Sign extension!**
+
+In order to explain the term sign extension, we first need to look at the term **2's Complement**. In short, 2's complement is a method of storing negative numbers in binary form. If you remember, we've discovered back at our very first `readelf` that this program uses the 2's complement method, because of the MIPS architecture.
+
+
+#### 2's complement
+Let's say we have a byte, which can store 256 values. Instead of storing 0 to 255 and an additional sign bit, we can declare that the values stored in the byte will range from 127 to -128, and since this is still only a range of 256 numbers, we can still cram all those values in.
+
+The actual implementation of the 2's complement method can be read upon [here](https://en.wikipedia.org/wiki/Two%27s_complement), but for now suffice it to say we have shifted the range of possible values such that `0x1 - 0x7f` represent positive numbers and `0xff - 0x80` represent negative numbers.
+
+And so, if that is the case, this still does not explain the `0xffffff` appended to our value of `0x85`. This is where sign extension comes in.
+#### Sign extension
+Extension referes to the process of loading a number represented by a number of bits into a register or location where it is represented by a larger number of bits. Let's say we load a byte into a 16-bit register. We already know what to put in the least significant 8 bits, but what do we do with the high bits?
+
+Well, there are two options:
+
+* Zero extension - Filling the rest of the bits with 0, and possibly losing sign information when using the 2's complement method. By zero extension, we are in fact treating the value as an unsigned value.
+* Sign extension - The alternative method is filling the rest of the bits with sign-matching bits: if the number is negative, fill them with `1` bits. If the number is positi(https://en.wikipedia.org/wiki/Two%27s_complement)ve, fill them with `0`.
+
+In order to understand why exactly this happens it is recommended to know how 2's complement works, and as such I should recommend again that you read into it [here](https://en.wikipedia.org/wiki/Two%27s_complement). This writeup has already become too long for me to delve into the topic.
+
+For now though, we know that `0x85` is a negative value, and as such, sign extending it to 32 bits will indeed give us `0xffffff85`. On the opposite side, `0x41` is positive, and sign extending it will give us the same `0x00000041` value.
+
+### What now then?
+Well, if the values are indeed signed, and the maximum value of a byte is 127, that means that no matter what we try, we can only reach a maximum value of `127 * 10 = 1270 < 1337`.
+
+Hmmm.
+
+I've tried to think of other ways. Maybe a buffer overflow, maybe using LD_PRELOAD, same as the last challenge, something that can give us a way. LD_PRELOAD is not a valid solution, according to the challenge creator, and no buffer overflows or otherwise can work on this, I've tried.
+
+If so, the only option is to start modifying things. We'll start by simple modifications to the binary, and our last solution will be tampering with memory at runtime in order to avoid the patching of the binary.
