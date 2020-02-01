@@ -1231,4 +1231,84 @@ Maybe there's something wrong with our calculations? Well, going over them leave
 
 If we can't solve it just by staring at the code until it confesses, we can do the next best thing. Let's use `gdb` in order to see what's happening here.
 
-### Debugging with
+### Debugging with GDB
+In order to debug a `qemu` program, we need to run it with `-g` and supply a port so that it can server it's `gdb-server`.
+We can do this like so:
+```console
+user@pc$ echo -n -e "\x85\x85\x85\x85\x85\x85\x85\x85\x85\x8c" | sudo chroot . qemu-mips-static -g 12345 bin/challenge3
+```
+In a separate console we can then do:
+```console
+user@pc$ gdb-multiarch bin/challenge3
+...
+...
+(gdb) set arch mips
+(gdb) set endian big
+(gdb) target remote localhost:12345
+```
+We're in. Now we can take a look at the program using `gdb`'s facilities. We can disassemble the `main` function using
+```console
+(gdb) disas main
+```
+Which will spit the assembly for the function. We already know where our important comparison happens, so we can start by setting a breakpoint there:
+```console
+(gdb) b *0x004008bc
+```
+Alright. Now let's run with `c` and reach the breakpoint. Once we've reached our breakpoint, we can start to investigate.
+Let's take a look at the original assembly again:
+```asm
+	4008b4:	lw	v1,28(s8)
+	4008b8:	li	v0,1337
+	4008bc:	bne	v1,v0,4008e8 <main+0x148>
+	4008c0:	nop
+```
+So at `0x004008bc`, we know that the value for our sum (saved at `28(sp)`), should be loaded into `$v1`. We also know that `0x539`, which is equal to `1337`, should be loaded into `$v0`.
+
+Right, so now we can look at the registers in order to see what the values are. Let's use `info registers`.
+```console
+(gdb) info registers
+          zero       at       v0       v1       a0       a1       a2       a3
+ R0   00000000 00000001 00000539 fffffb39 7f7c4e2c ffffffff 00000001 00000000 
+            t0       t1       t2       t3       t4       t5       t6       t7
+ R8   7f6a2840 00000000 00000b64 7f7fe300 00000001 7f643ff8 7f63a918 00000486 
+            s0       s1       s2       s3       s4       s5       s6       s7
+ R16  00000000 00400920 00000000 00000000 00000000 00000000 00000000 00000000 
+            t8       t9       k0       k1       gp       sp       s8       ra
+ R24  00000000 7f73e930 00000000 00000000 00419010 7ffff668 7ffff668 00400864 
+            sr       lo       hi      bad    cause       pc
+      20000010 0001f324 00000216 00000000 00000000 004008bc 
+           fsr      fir
+      00000000 00739300 
+```
+And here we have are values.
+
+`$v0` is `0x539` as expected, and `$v1` is also - Wait what? `0xfffffb39`? Where did this value come from?
+Strange...
+
+Let's try to understand what happened here. Let's restart and put a breakpoint right after the first `lb` instruction to see what byte is loaded into memory.
+
+```console
+(gdb) b *0x4008ac
+(gdb) c
+```
+Now that we've reached the breakpoint, let's look at the registers again.
+```console
+(gdb) info registers
+          zero       at       v0       v1       a0       a1       a2       a3
+ R0   00000000 00000001 ffffff85 7ffff680 7f7c4e2c ffffffff 00000001 00000000 
+            t0       t1       t2       t3       t4       t5       t6       t7
+ R8   7f6a2840 00000000 00000b64 7f7fe300 00000001 7f643ff8 7f63a918 00000486 
+            s0       s1       s2       s3       s4       s5       s6       s7
+ R16  00000000 00400920 00000000 00000000 00000000 00000000 00000000 00000000 
+            t8       t9       k0       k1       gp       sp       s8       ra
+ R24  00000000 7f73e930 00000000 00000000 00419010 7ffff668 7ffff668 00400864 
+            sr       lo       hi      bad    cause       pc
+      20000010 0001f324 00000216 00000000 00000000 004008ac 
+           fsr      fir
+      00000000 00739300 
+``` 
+Now we can see that the value of `$v0` is `0xffffff85`. Why is `$v0` getting this value, and not just `0x85`? Let's try feeding our program some other character, maybe `A`s wil work.
+```console
+user@pc$ echo -n -e "AAAAAAAAAA" | sudo chroot . qemu-mips-static bin/challenge3
+```
+
