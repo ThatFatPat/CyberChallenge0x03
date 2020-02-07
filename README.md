@@ -1394,7 +1394,7 @@ I've tried to think of other ways. Maybe a buffer overflow, maybe using LD_PRELO
 
 Now that the rules are clearly laid out, we can start coming up with soltuions. In order for the patching to not get quickly out of hand, I tried to limit myself to patching **only a single bit** in order to get the program to work with each solution.
 
-### Workaround \#1: Patching the `lb` instruction
+### Workaround 1: Patching the `lb` instruction
 We've already figured out that the fact the thae `lb` instruction sign-extends the registers. What if we could find a way to make the instruction load the byte into the register zero-extended? In fact, there is a very simple way of achieving that. If only we used a `lbu` (Load Byte Unsigned) instruction, all our issues will go away.
 
 Luckily, in order to turn a `lb` into a `lbu`, all we have to do is simply flip one bit, turning the first byte from `0x80` to `0x90`.
@@ -1409,7 +1409,7 @@ We can see that simply patching it with a hex editor (010 Editor comes to mind),
 ```
 And that's it. It's that simple.
 
-### Workaround \#2: Patching the format string
+### Workaround 2: Patching the format string
 Another possible solution is patching the format string being passed to `scanf`. Right now, we can only accept 10 characters. The sum of those signed chars will not surpass `1270` no matter what we do. But if we can instead accept more characters, say for example 11, we can increase the maximum value all the way up to `1397`, which safely includes the desired `1337` value. Luckily, we can do this without clobbering the stack, as there is enough allocated and unused space for an extra character.
 
 Let's look at the format string in hex:
@@ -1422,7 +1422,7 @@ We can simply change the char corresponding to the `0`, in this case `0x30`, to 
 ```
 This patching only constitutes a one bit change. That's it. Now, passing an 11 character string with chars within the signed range can get us the desired result.
 
-### Workaround \#3: Patching the constant
+### Workaround 3: Patching the constant
 One obvious solution - If the constant is too big to reach, change the constant. We can patch the `0x539` (1337) to a `0x439` by simply changing one bit in the `li` instruction.
 
 That means the following instruction:
@@ -1435,7 +1435,7 @@ Transforms into the following:
 ```
 And now, we can easliy construct a colliding string.
 
-### Workaround \#4: Patching the branch
+### Workaround 4: Patching the branch
 If we can't get to the right hash, why not make all the wrong hashes work instead? By changing one bit, and one bit only, we can patch the `bne` instruction and replace it with a `beq`. We've negated the `if` condition, and it's as simple as that.
 
 If so, that means this instruction:
@@ -1448,5 +1448,5 @@ Turns into the following:
 ```
 And we've eliminated any need to even try and match the password.
 
-## Dynamic Memory Patching - Workaround \#5
+## Dynamic Memory Patching - Workaround 5
 
