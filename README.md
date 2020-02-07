@@ -1390,3 +1390,32 @@ We can simply change the char corresponding to the `0`, in this case `0x30`, to 
 "%11s": 0x2531317300 == 25 31 31 73 00
 ```
 This patching only constitutes a one bit change. That's it. Now, passing an 11 character string with chars within the signed range can get us the desired result.
+
+### Workaround \#3: Patching the constant
+One obvious solution - If the constant is too big to reach, change the constant. We can patch the `0x539` (1337) to a `0x439` by simply changing one bit in the `li` instruction.
+
+That means the following instruction:
+```asm
+0x4008b8:	24 02 05 39 	li v0,1337
+```
+Transforms into the following:
+```asm
+0x4008b8:	24 02 04 39 	li v0,1081
+```
+And now, we can easliy construct a colliding string.
+
+### Workaround \#4: Patching the branch
+If we can't get to the right hash, why not make all the wrong hashes work instead? By changing one bit, and one bit only, we can patch the `bne` instruction and replace it with a `beq`. We've negated the `if` condition, and it's as simple as that.
+
+If so, that means this instruction:
+```asm
+0x4008bc:	14 62 00 0a 	bne v1,v0,4008e8 <main+0x148>
+```
+Turns into the following:
+```asm
+0x4008bc:	10 62 00 0a 	beq v1,v0,4008e8 <main+0x148>
+```
+And we've eliminated any need to even try and match the password.
+
+## Dynamic Memory Patching - Workaround \#5
+
