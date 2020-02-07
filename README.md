@@ -1359,4 +1359,21 @@ Hmmm.
 
 I've tried to think of other ways. Maybe a buffer overflow, maybe using LD_PRELOAD, same as the last challenge, something that can give us a way. LD_PRELOAD is not a valid solution, according to the challenge creator, and no buffer overflows or otherwise can work on this, I've tried.
 
-If so, the only option is to start modifying things. We'll start by simple modifications to the binary, and our last solution will be tampering with memory at runtime in order to avoid the patching of the binary.
+**If so, the only option is to start modifying things. We'll start by simple modifications to the binary, and our last solution will be tampering with memory at runtime in order to avoid the patching of the binary.**
+
+Now that the rules are clearly laid out, we can start coming up with soltuions. In order for the patching to not get quickly out of hand, I tried to limit myself to patching **only a single bit** in order to get the program to work with each solution.
+
+### Workaround \#1: Patching the `lb` instruction
+We've already figured out that the fact the thae `lb` instruction sign-extends the registers. What if we could find a way to make the instruction load the byte into the register zero-extended? In fact, there is a very simple way of achieving that. If only we used a `lbu` (Load Byte Unsigned) instruction, all our issues will go away.
+
+Luckily, in order to turn a `lb` into a `lbu`, all we have to do is simply flip one bit, turning the first byte from `0x80` to `0x90`.
+
+If we look at the original instruction:
+```
+0x40087c:	80 42 00 0c	lb v0,12(v0)
+```
+We can see that simply patching it with a hex editor (010 Editor comes to mind), will turn it into a `lbu` instruction.
+```
+0x40087c:	90 42 00 0c	lbu v0,12(v0)
+```
+And that's it. It's that simple.
