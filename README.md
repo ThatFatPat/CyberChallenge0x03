@@ -1369,11 +1369,11 @@ We've already figured out that the fact the thae `lb` instruction sign-extends t
 Luckily, in order to turn a `lb` into a `lbu`, all we have to do is simply flip one bit, turning the first byte from `0x80` to `0x90`.
 
 If we look at the original instruction:
-```
+```asm
 0x40087c:	80 42 00 0c	lb v0,12(v0)
 ```
 We can see that simply patching it with a hex editor (010 Editor comes to mind), will turn it into a `lbu` instruction.
-```
+```asm
 0x40087c:	90 42 00 0c	lbu v0,12(v0)
 ```
 And that's it. It's that simple.
