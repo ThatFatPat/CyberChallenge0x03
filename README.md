@@ -25,11 +25,11 @@
     + [2's complement](#2-s-complement)
     + [Sign extension](#sign-extension)
     + [What now then?](#what-now-then)
-    + [Workaround \#1: Patching the `lb` instruction](#workaround-1-patching-the-lb-instruction)
-    + [Workaround \#2: Patching the format string](#workaround-2-patching-the-format-string)
-    + [Workaround \#3: Patching the constant](#workaround-3-patching-the-constant)
-    + [Workaround \#4: Patching the branch](#workaround-4-patching-the-branch)
-    + [Dynamic Memory Patching - Workaround \#5](#dynamic-memory-patching-workaround-5)
+    + [Workaround 1: Patching the `lb` instruction](#workaround-1-patching-the-lb-instruction)
+    + [Workaround 2: Patching the format string](#workaround-2-patching-the-format-string)
+    + [Workaround 3: Patching the constant](#workaround-3-patching-the-constant)
+    + [Workaround 4: Patching the branch](#workaround-4-patching-the-branch)
+    + [Dynamic Memory Patching - Workaround 5](#dynamic-memory-patching---workaround-5)
 
 ## Introduction and Setup
 Another month, another cyber challenge. This one started out interesting enough but then became unexpectedly difficult all of a sudden. It was quite the ride! I'd like to take you through this journey with me.
