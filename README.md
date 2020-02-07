@@ -1,5 +1,36 @@
 # CyberChallenge0x03
 
+- [CyberChallenge0x03](#cyberchallenge0x03)
+  * [Introduction and Setup](#introduction-and-setup)
+  * [First Run](#first-run)
+  * [Reversing The Binary](#reversing-the-binary)
+    + [A Quick Overview of the MIPS Architecture](#a-quick-overview-of-the-mips-architecture)
+      - [RISC vs. CISC](#risc-vs-cisc)
+      - [General Purpose Registers](#general-purpose-registers)
+      - [Instruction Set](#instruction-set)
+    + [Examining the code](#examining-the-code)
+    + [Main Body](#main-body)
+      - [0x4007d8 - 0x4007ec](#0x4007d8---0x4007ec)
+      - [String Table](#string-table)
+      - [C Standard Library Function Address Reference Table](#c-standard-library-function-address-reference-table)
+      - [0x4007f0 - 0x400810](#0x4007f0---0x400810)
+      - [0x400814 - 0x400828](#0x400814---0x400828)
+      - [0x400850 - 0x40086c](#0x400850---0x40086c)
+      - [0x40089c - 0x4008b0](#0x40089c---0x4008b0)
+      - [0x400870 - 0x4008b0](#0x400870---0x4008b0)
+      - [0x4008b4 - 0x4008c0](#0x4008b4---0x4008c0)
+      - [0x4008c4 - 0x4008e4](#0x4008c4---0x4008e4)
+  * [Solution](#solution)
+    + [Debugging with GDB](#debugging-with-gdb)
+    + [2's complement](#2-s-complement)
+    + [Sign extension](#sign-extension)
+    + [What now then?](#what-now-then)
+    + [Workaround \#1: Patching the `lb` instruction](#workaround---1--patching-the--lb--instruction)
+    + [Workaround \#2: Patching the format string](#workaround---2--patching-the-format-string)
+    + [Workaround \#3: Patching the constant](#workaround---3--patching-the-constant)
+    + [Workaround \#4: Patching the branch](#workaround---4--patching-the-branch)
+    + [Dynamic Memory Patching - Workaround \#5](#dynamic-memory-patching---workaround---5)
+
 ## Introduction and Setup
 Another month, another cyber challenge. This one started out interesting enough but then became unexpectedly difficult all of a sudden. It was quite the ride! I'd like to take you through this journey with me.
 
