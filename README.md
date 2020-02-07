@@ -1377,3 +1377,16 @@ We can see that simply patching it with a hex editor (010 Editor comes to mind),
 0x40087c:	90 42 00 0c	lbu v0,12(v0)
 ```
 And that's it. It's that simple.
+
+### Workaround \#2: Patching the format string
+Another possible solution is patching the format string being passed to `scanf`. Right now, we can only accept 10 characters. The sum of those signed chars will not surpass `1270` no matter what we do. But if we can instead accept more characters, say for example 11, we can increase the maximum value all the way up to `1397`, which safely includes the desired `1337` value. Luckily, we can do this without clobbering the stack, as there is enough allocated and unused space for an extra character.
+
+Let's look at the format string in hex:
+```
+"%10s": 0x2531307300 == 25 31 30 73 00
+```
+We can simply change the char corresponding to the `0`, in this case `0x30`, to another `1` - `0x31`.
+```
+"%11s": 0x2531317300 == 25 31 31 73 00
+```
+This patching only constitutes a one bit change. That's it. Now, passing an 11 character string with chars within the signed range can get us the desired result.
