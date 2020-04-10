@@ -88,7 +88,7 @@ In order to execute the binary we have to follow a couple of simple steps:
 * Install QEMU
 * Set up a chroot environment. 
 * Copy the necessary binaries into the chroot
-###### For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02)
+###### For a detailed explanation on `chroot` please refer to my solution for the previous challenge, found [here](https://github.com/ThatFatPat/CyberChallenge0x02#3rd-soultion-we-chrootin-boys)
 
 The installation of QEMU itself is simple enough. Just use `apt` (or a package manager of your choice) to install the following packages: `qemu qemu-user-static`.
 We'll need a few more dependencies for our purposes: `gdb-multiarch libc6-mips-cross`
