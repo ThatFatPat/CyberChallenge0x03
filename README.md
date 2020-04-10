@@ -867,9 +867,9 @@ This is a lot of information, but right at the end we can find the table we're l
  
  There we go, much better. Now that we know how to parse the address, we can see that `0x411064` refers to our friend `printf`. Also, a nice detail is that the access column corresponds to the original `addi` we used in order to load the address into our `$t9` register:
  ```asm
- 	4007e0:	lw	v0,-32684(gp)
-	4007e4:	move	t9,v0
-	4007e8:	jalr	t9
+ 	4007e0:		lw	v0,-32684(gp)
+	4007e4:		move	t9,v0
+	4007e8:		jalr	t9
 ```
 
 If so, this simple piece of code can be translated into:
