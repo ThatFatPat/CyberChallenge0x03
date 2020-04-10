@@ -1359,3 +1359,91 @@ And we've eliminated any need to even try and match the password.
 
 ## Dynamic Memory Patching - Workaround 5
 
+Now, patching the executable is all good an dandy, but I wanted to see if this could be done without patching. I was pointed towards `/proc/[pid]/mem`, and I started trying to figure out how that could be manipulated.
+
+`/proc/[pid]/mem` allow the user direct access to a program's memory. Reading from the pseudo-file at offset `x` will read offset `x` of the program. Unfortunately, since this file is not modifiable, we can not use that for our purposes. At least, not on it's own.
+
+Keep in mind that a process wishing to read this file for a specific `pid`, will have to first attach using `ptrace` to the process whose memory is being read.
+
+### Using `/proc/[pid]/maps`
+The following snippet was text was lifted straight from a StackOverflow answer by user `Gilles 'SO- stop being evil'` ([Link](https://unix.stackexchange.com/a/6302))
+
+#### `/proc/$pid/maps`
+`/proc/$pid/mem` shows the contents of $pid's memory mapped the same way as in the process, i.e., the byte at offset x in the pseudo-file is the same as the byte at address x in the process. If an address is unmapped in the process, reading from the corresponding offset in the file returns `EIO` (Input/output error). For example, since the first page in a process is never mapped (so that dereferencing a `NULL` pointer fails cleanly rather than unintendedly accessing actual memory), reading the first byte of `/proc/$pid/mem` always yield an I/O error.
+
+The way to find out what parts of the process memory are mapped is to read `/proc/$pid/maps`. This file contains one line per mapped region, looking like this:
+```
+08048000-08054000 r-xp 00000000 08:01 828061     /bin/cat
+08c9b000-08cbc000 rw-p 00000000 00:00 0          [heap]
+```
+The first two numbers are the boundaries of the region (addresses of the first byte and the byte after last, in hexa). The next column contain the permissions, then there's some information about the file (offset, device, inode and name) if this is a file mapping. See the [proc(5)](http://www.kernel.org/doc/man-pages/online/pages/man5/proc.5.html) man page or [Understanding Linux `/proc/id/maps` for more information](https://stackoverflow.com/questions/1401359/understanding-linux-proc-id-maps).
+
+Here's a proof-of-concept script that dumps the contents of its own memory.
+```python
+#! /usr/bin/env python
+import re
+maps_file = open("/proc/self/maps", 'r')
+mem_file = open("/proc/self/mem", 'r', 0)
+for line in maps_file.readlines():  # for each mapped region
+    m = re.match(r'([0-9A-Fa-f]+)-([0-9A-Fa-f]+) ([-r])', line)
+    if m.group(3) == 'r':  # if this is a readable region
+        start = int(m.group(1), 16)
+        end = int(m.group(2), 16)
+        mem_file.seek(start)  # seek to region start
+        chunk = mem_file.read(end - start)  # read region contents
+        print chunk,  # dump contents to standard output
+maps_file.close()
+mem_file.close()
+```
+
+#### `/proc/$pid/mem`
+If you try to read from the mem pseudo-file of another process, it doesn't work: you get an `ESRCH` (No such process) error.
+
+The permissions on `/proc/$pid/mem` (r--------) are more liberal than what should be the case. For example, you shouldn't be able to read a setuid process's memory. Furthermore, trying to read a process's memory while the process is modifying it could give the reader an inconsistent view of the memory, and worse, there were race conditions that could trace older versions of the Linux kernel (according to this [lkml](http://lkml.indiana.edu/hypermail/linux/kernel/0505.0/0858.html) thread, though I don't know the details). So additional checks are needed:
+
+The process that wants to read from `/proc/$pid/mem` must attach to the process using ptrace with the `PTRACE_ATTACH` flag. This is what debuggers do when they start debugging a process; it's also what `strace` does to a process's system calls. Once the reader has finished reading from `/proc/$pid/mem`, it should detach by calling ptrace with the PTRACE_DETACH flag.
+The observed process must not be running. Normally calling `ptrace(PTRACE_ATTACH, …)` will stop the target process (it sends a `STOP` signal), but there is a race condition (signal delivery is asynchronous), so the tracer should call `wait` (as documented in [ptrace(2)](http://www.kernel.org/doc/man-pages/online/pages/man2/ptrace.2.html)).
+A process running as root can read any process's memory, without needing to call ptrace, but the observed process must be stopped, or the read will still return `ESRCH`.
+
+In the Linux kernel source, the code providing per-process entries in `/proc` is in `fs/proc/base.c`, and the function to read from `/proc/$pid/mem` is `mem_read`. The additional check is performed by [`check_mem_permission`](http://lxr.linux.no/#linux+v2.6.37/fs/proc/base.c#L197).
+
+Here's some sample C code to attach to a process and read a chunk its of mem file (error checking omitted):
+```c
+sprintf(mem_file_name, "/proc/%d/mem", pid);
+mem_fd = open(mem_file_name, O_RDONLY);
+ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+waitpid(pid, NULL, 0);
+lseek(mem_fd, offset, SEEK_SET);
+read(mem_fd, buf, _SC_PAGE_SIZE);
+ptrace(PTRACE_DETACH, pid, NULL, NULL);
+```
+### Parsing the memory
+Now that we know what `/proc/[pid]/maps` can do for us, we can use it in order to read the contents of the program. While initially solving this, I was using a helper C program I wrote (Can be found in `utils`). Using this program I could attach to the process and read memory at arbitrary locations, while it was attached to and running in the background.
+
+After writing a script, I know I easily could have used `Python` to have done so, using the proof-of-concept script presented in the answer above. Using that script to read the memory allows us to search it using `re` (Python's regex implementation), which can allow us to find patterns in the memory.
+
+One way of using this to our advantage is filling the password buffer with `A`s, and subsequently searching for them in the memory.
+
+### Physical Memory, Virtual Memory amd Virtual Virtual Memory
+We need to stop here for a moment. There is one important detail that I've been omitting up until now: **The addresses we are accessing and reading are not the same addresses that we can find by using GDB**. The reason for that is quite simple. Since we're using an emulator, it has its own memory regions, living in the 64-bit virtual realm of our computer (Only our kernel can access physical memory addresses directly), and this emulator has to then emulate a virtual address space for our MIPS program to run in, hence the "Virtual Virtual" name.
+
+Knowing that still doesn't explain how GDB can access this memory as if it were completely normal, and the reason for that is that since we attached to the program through a GDB Server instance provided to us by QEMU (`-g 12345`), all of the access to memory goes through a translator that allows GDB to treat the program's address space as if it was running normally on a MIPS setup.
+
+Knowing this explains why we have to scan the memory for our `"A"s` buffer, since with our computer using [ASLR](https://en.wikipedia.org/wiki/Address_space_layout_randomization) and virtualizing the memory space for the emulated executable, the buffer will change locations every run and we will have to relocate it.
+
+### Bruteforcing the emulator
+Now that we've found our buffer, we will encounter some fascinating thing: Our string can be found twice in memory! Reading forwards and backwards in those memory locations reveals that one of the strings is found within the console buffer, which I find amusing but also distractive for our script. We'll have to handle finding the right address (See the script for solution. Long story short: it's always the second one).
+
+Now the only way I could find to ensure that the desired location in the memory is indeed `0x539` when it is tested is to single-step the emulator using `ptrace` and poke the value into the desired address with every iteration. Yes, you heard me right. Single-step the emulator, not the program. One can only imagine how many emulator instructions it takes to run a single emulated instruction, and by doing it this way we are killing every hope we had at a preformant program. Solving it this way takes around 20 seconds of runtime, which is unbelievable for a program which does basically nothing.
+
+With all that said, it works.
+
+It was very tiring to get there, but it does indeed work.
+
+##### Full dynamic solution can be found in the `solution5` folder in the repo.
+
+## Last words
+That's it. We've done it. We've solved the challenge, we overcame the issue. We learned from it, we grew from it.
+
+If you read all the way to here, I want to believe you at least found something useful or interesting in this guide. I encourage you to look at the solutions and try them for yourself.
+Any inquiries about the solutions will be happily accepted in any communication channel you can reach me at.
